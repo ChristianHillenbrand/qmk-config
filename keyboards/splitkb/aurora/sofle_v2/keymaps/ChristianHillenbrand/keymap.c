@@ -3,17 +3,26 @@
 #include "keymap_german.h"
 
 enum layers {
-  _BASE = 0,
-  _NAV,
-  _MOUSE,
-  _MEDIA,
-  _NUM,
-  _FUN,
+  L_BASE = 0,
+  L_NAV,
+  L_MOUSE,
+  L_MEDIA,
+  L_NUM,
+  L_FUN,
+};
+
+const key_override_t shift_bspc_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
+const key_override_t ralt_bspc_override = ko_make_basic(MOD_MASK_ALT, KC_BSPC, DE_QUES);
+
+const key_override_t **key_overrides = (const key_override_t *[]){
+	&shift_bspc_override,
+    &ralt_bspc_override,
+	NULL // null termination
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-  [_BASE] = LAYOUT(
+  [L_BASE] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                              ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          QK_GESC,         DE_1,            DE_2,            DE_3,            DE_4,            DE_5,                                           DE_6,            DE_7,            DE_8,            DE_9,            DE_0,            KC_BSPC, 
@@ -24,12 +33,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ╭──────────╮  ╭──────────╮  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          KC_LCTL,         DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,               KC_MUTE,      XXXXXXX,      DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RCTL, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┤  ╰──────────╯  ╰──────────╯  ├────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯     
-                          KC_LGUI,         KC_LALT,         KC_RALT,         MO(_NAV),        KC_SPC,                                         KC_ENT,          MO(_FUN),        KC_RALT,         KC_LALT,         KC_RGUI
+                          KC_LGUI,         KC_LALT,         KC_RALT,         MO(L_NAV),       KC_SPC,                                         KC_ENT,          MO(L_FUN),       KC_RALT,         KC_LALT,         KC_RGUI
     //                  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯                              ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
 
-  [_NAV] = LAYOUT(
+  [L_NAV] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                              ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                        _______,         _______,         _______,         _______,         _______,         KC_BSPC, 
@@ -45,7 +54,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   ),
 
-  [_MOUSE] = LAYOUT(
+  [L_MOUSE] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                              ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                        _______,         _______,         _______,         _______,         _______,         KC_BSPC, 
@@ -61,7 +70,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   ),
 
-  [_MEDIA] = LAYOUT(
+  [L_MEDIA] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                              ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                        _______,         _______,         _______,         _______,         _______,         KC_BSPC, 
@@ -77,7 +86,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   ),
 
-  [_NUM] = LAYOUT(
+  [L_NUM] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                              ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                        _______,         _______,         _______,         _______,         _______,         KC_BSPC, 
@@ -92,7 +101,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //                  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯                              ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
   ),
 
-  [_FUN] = LAYOUT(
+  [L_FUN] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                              ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                        _______,         _______,         _______,         _______,         _______,         KC_BSPC, 
@@ -110,11 +119,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 #if defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-  [_BASE]  = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
-  [_NAV]   = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
-  [_MOUSE] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
-  [_MEDIA] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
-  [_NUM]   = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
-  [_FUN]   = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)}
+  [L_BASE]  = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
+  [L_NAV]   = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
+  [L_MOUSE] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
+  [L_MEDIA] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
+  [L_NUM]   = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)},
+  [L_FUN]   = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_MS_WH_UP, KC_MS_WH_DOWN)}
 };
 #endif // defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
