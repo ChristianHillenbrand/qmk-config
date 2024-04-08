@@ -11,14 +11,105 @@ enum layers {
   L_FUN,
 };
 
+/*******************
+ * CUSTOM KEYCODES *
+ *******************/
+
+enum custom_keycodes {
+  CK_LPRN = SAFE_RANGE,
+  CK_RPRN
+};
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  static bool labk = false;
+
+  switch (keycode) {
+    case CK_LPRN:
+      if (record->event.pressed) {
+        if (get_mods() & MOD_MASK_SHIFT) {
+          del_mods(MOD_MASK_SHIFT);
+          register_code(DE_LABK);
+          labk = true;
+        }
+        else {
+          register_code(KC_LSFT);
+          register_code(DE_8);
+        }
+      } else {
+        if (labk) {
+          unregister_code(DE_LABK);
+          labk = false;
+        }
+        else {
+          unregister_code(KC_LSFT);
+          unregister_code(DE_8);
+        }
+      }
+      return false;
+
+    case CK_RPRN:
+      if (record->event.pressed) {
+        if (get_mods() & MOD_MASK_SHIFT) {
+          register_code(DE_LABK);
+          labk = true;
+        }
+        else {
+          register_code(KC_LSFT);
+          register_code(DE_9);
+        }
+      }
+      else {
+        if (labk) {
+          unregister_code(DE_LABK);
+        }
+        else {
+          unregister_code(KC_LSFT);
+          unregister_code(DE_9);
+        }
+      }
+      return false;
+        
+    default:
+      return true;
+  }
+}
+
+/*****************
+ * KEY OVERRIDES *
+ *****************/
+
 const key_override_t shift_bspc_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
-const key_override_t ralt_bspc_override = ko_make_basic(MOD_MASK_ALT, KC_BSPC, DE_QUES);
+const key_override_t ralt_bspc_override  = ko_make_basic(MOD_MASK_ALT, KC_BSPC, DE_QUES);
+const key_override_t shift_lbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_LBRC, DE_LCBR);
+const key_override_t shift_rbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_RBRC, DE_RCBR);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
-	&shift_bspc_override,
-    &ralt_bspc_override,
-	NULL // null termination
+  &shift_bspc_override,
+  &ralt_bspc_override,
+  &shift_lbrc_override,
+  &shift_rbrc_override,
+  NULL // null termination
 };
+
+/**********
+ * COMBOS *
+ **********/
+
+const uint16_t PROGMEM lprn_combo[] = {KC_U, KC_I, COMBO_END};
+const uint16_t PROGMEM rprn_combo[] = {KC_I, KC_O, COMBO_END};
+const uint16_t PROGMEM lbrc_combo[] = {KC_F, KC_K, COMBO_END};
+const uint16_t PROGMEM rbrc_combo[] = {KC_K, KC_L, COMBO_END};
+
+combo_t key_combos[] = {
+  COMBO(lprn_combo, CK_LPRN),
+  COMBO(rprn_combo, CK_RPRN),
+  COMBO(lbrc_combo, DE_LBRC),
+  COMBO(rbrc_combo, DE_RBRC)
+};
+
+/**********
+ * KEYMAP *
+ **********/
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
