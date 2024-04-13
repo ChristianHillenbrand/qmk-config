@@ -14,6 +14,30 @@ enum layers {
 #define LT_NAV_SPC LT(L_NAV, KC_SPC) 
 #define LT_NUM_ENT LT(L_NUM, KC_ENT) 
 
+/**********************
+ * TAP HOLD BEHAVIORS *
+ **********************/
+
+bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case SFT_T(DE_LABK):
+    case SFT_T(DE_HASH):
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case LT_NAV_SPC:
+    case LT_NUM_ENT:
+      return true;
+    default:
+      return false;
+  }
+}
+
 /*****************
  * KEY OVERRIDES *
  *****************/
@@ -23,7 +47,7 @@ const key_override_t ralt_o_override = ko_make_basic(MOD_BIT(KC_RALT), DE_O, DE_
 const key_override_t ralt_u_override = ko_make_basic(MOD_BIT(KC_RALT), DE_U, DE_UDIA);
 const key_override_t ralt_s_override = ko_make_basic(MOD_BIT(KC_RALT), DE_S, DE_SS);
 const key_override_t shift_bspc_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
-const key_override_t ralt_bspc_override  = ko_make_basic(MOD_BIT(KC_RALT), KC_BSPC, DE_PIPE);
+const key_override_t ralt_bspc_override  = ko_make_basic(MOD_BIT(KC_RALT), KC_BSPC, DE_BSLS);
 const key_override_t shift_lprn_override = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_8), DE_LABK);
 const key_override_t shift_rprn_override = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_9), LSFT(DE_LABK));
 const key_override_t shift_lbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_LBRC, DE_LCBR);
@@ -59,7 +83,6 @@ combo_t key_combos[] = {
   COMBO(lbrc_combo, DE_LBRC),
   COMBO(rbrc_combo, DE_RBRC),
   COMBO(caps_word_combo, QK_CAPS_WORD_TOGGLE)
-
 };
 
 /**********
