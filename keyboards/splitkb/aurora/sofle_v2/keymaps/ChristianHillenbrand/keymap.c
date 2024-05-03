@@ -13,8 +13,7 @@ enum layers {
 
 #define LT_NAV_SPC LT(L_NAV, KC_SPC) 
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
-#define LT_MOUSE_Y LT(L_MOUSE, DE_Y)
-#define LT_MOUSE_MINS LT(L_MOUSE, DE_MINS)
+#define LT_FUN_SFT TD(TD_LT_FUN_SFT)
 
 /*************
  * CAPS WORD *
@@ -100,6 +99,7 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  **********/
 
 const uint16_t PROGMEM capsword_combo[] = {SFT_T(DE_LABK), SFT_T(DE_HASH), COMBO_END};
+const uint16_t PROGMEM rgbtog_combo[] = {DE_F, DE_J, COMBO_END};
 const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
 const uint16_t PROGMEM lbrc_combo[] = {DE_S, DE_D, COMBO_END};
@@ -107,6 +107,7 @@ const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
 
 combo_t key_combos[] = {
   COMBO(capsword_combo, CW_TOGG),
+  COMBO(rgbtog_combo, RGB_TOG),
   COMBO(lprn_combo, LSFT(DE_8)),
   COMBO(rprn_combo, LSFT(DE_9)),
   COMBO(lbrc_combo, DE_LBRC),
@@ -117,9 +118,13 @@ combo_t key_combos[] = {
  * TAP DANCES *
  **************/
 
-enum tap_dances{
-  TD_BOOT = 0
-};
+typedef enum {
+    TD_UNKNOWN,
+    TD_SINGLE_TAP,
+    TD_SINGLE_HOLD
+} td_state_t;
+
+static td_state_t td_state;
 
 void td_fn_boot(tap_dance_state_t *state, void *user_data) {
   if (state->count == 2) {
@@ -127,8 +132,48 @@ void td_fn_boot(tap_dance_state_t *state, void *user_data) {
   }
 }
 
+td_state_t cur_dance(tap_dance_state_t* state) {
+  if (state->count == 1) {
+    if (state->interrupted || !state->pressed) 
+      return TD_SINGLE_TAP;
+    else 
+      return TD_SINGLE_HOLD;
+  }
+  return TD_UNKNOWN;
+}
+
+void lt_fun_sft_finished(tap_dance_state_t *state, void *user_data) {
+  td_state = cur_dance(state);
+  switch (td_state) {
+    case TD_SINGLE_TAP:
+      set_oneshot_mods(MOD_BIT(KC_LSFT));
+      break;
+    case TD_SINGLE_HOLD:
+      layer_on(L_FUN);
+      break;
+    default:
+      break;
+  }
+}
+
+void lt_fun_sft_reset(tap_dance_state_t *state, void *user_data) {
+  switch (td_state) {
+    case TD_SINGLE_HOLD:
+      layer_off(L_FUN);
+      break;
+    default:
+      break;
+  }
+}
+
+enum tap_dances{
+  TD_BOOT = 0,
+  TD_LT_FUN_SFT
+};
+
 tap_dance_action_t tap_dance_actions[] = { 
-  [TD_BOOT] = ACTION_TAP_DANCE_FN(td_fn_boot)
+  [TD_BOOT] = ACTION_TAP_DANCE_FN(td_fn_boot),
+  [TD_LT_FUN_SFT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, lt_fun_sft_finished, lt_fun_sft_reset)
 };
 
 /**********
@@ -148,7 +193,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          KC_LCTL,         DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            KC_MUTE,            RGB_TOG,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS      ,   KC_RCTL, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         KC_RALT,         MO(L_MEDIA),     LT_NAV_SPC,         LT_NUM_ENT,      MO(L_FUN),       KC_RALT,         KC_LALT,         KC_RGUI
+                                           KC_LGUI,         KC_LALT,         KC_RALT,         MO(L_MEDIA),     LT_NAV_SPC,         LT_NUM_ENT,      LT_FUN_SFT,     KC_RALT,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
