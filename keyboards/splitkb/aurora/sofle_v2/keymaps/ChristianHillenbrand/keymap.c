@@ -70,10 +70,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
     case NAV_LEFT: return perform_tap_hold(record, KC_HOME);
     case NAV_RGHT: return perform_tap_hold(record, KC_END);
-    case NAV_UP: return perform_tap_hold(record, C(KC_HOME));
+    case NAV_UP:   return perform_tap_hold(record, C(KC_HOME));
     case NAV_DOWN: return perform_tap_hold(record, C(KC_END));
     case NAV_BSPC: return perform_tap_hold(record, C(KC_BSPC));
-    case NAV_DEL: return perform_tap_hold(record, C(KC_DEL));
+    case NAV_DEL:  return perform_tap_hold(record, C(KC_DEL));
 
     default: 
       return true;
@@ -170,7 +170,10 @@ void mt_mouse_ralt_finished(tap_dance_state_t *state, void *user_data) {
   td_state = cur_dance(state);
   switch (td_state) {
     case TD_SINGLE_TAP:
-      layer_on(L_MOUSE);
+      if (IS_LAYER_OFF(L_MOUSE))
+        layer_on(L_MOUSE);
+      else
+        layer_off(L_MOUSE);
       break;
 
     case TD_SINGLE_HOLD:
@@ -267,12 +270,16 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
+const uint16_t PROGMEM bspc_combo[] = {KC_HOME, KC_UP, COMBO_END};
+const uint16_t PROGMEM del_combo[]  = {KC_UP, KC_END, COMBO_END};
 const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
 const uint16_t PROGMEM lbrc_combo[] = {DE_S_SS, DE_D, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
 
 combo_t key_combos[] = {
+  COMBO(bspc_combo, KC_BSPC),
+  COMBO(del_combo, KC_DEL),
   COMBO(lprn_combo, LSFT(DE_8)),
   COMBO(rprn_combo, LSFT(DE_9)),
   COMBO(lbrc_combo, DE_LBRC),
@@ -312,7 +319,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         C(DE_Y),         C(DE_X),         C(DE_C),         C(DE_V),         C(DE_Z),         _______,            _______,         C(DE_Z),         C(DE_V),         C(DE_C),         C(DE_X),         C(DE_Y),         _______, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           _______,         _______,         KC_BTN3,         KC_BTN2,         KC_BTN1,            KC_BTN1,         KC_BTN2,         KC_BTN3,         _______,         _______
+                                           _______,         _______,         _______,         KC_BTN2,         KC_BTN1,            KC_BTN1,         KC_BTN2,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ), 
@@ -322,9 +329,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         TD(TD_BOOT),     _______,         _______,         _______,         _______,                                              _______,         NAV_BSPC,        NAV_UP,          NAV_DEL,         _______,         _______, 
+         _______,         TD(TD_BOOT),     _______,         _______,         _______,         _______,                                              _______,         KC_HOME,         KC_UP,           KC_END,          _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         KC_LGUI,         KC_LALT,         KC_LCTL,         KC_LSFT,         KC_RALT,                                              _______,         NAV_LEFT,        NAV_DOWN,        NAV_RGHT,        _______,         _______, 
+         _______,         KC_LGUI,         KC_LALT,         KC_LCTL,         KC_LSFT,         KC_RALT,                                              _______,         KC_LEFT,         KC_DOWN,         KC_RGHT,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         _______,         _______,         _______,         _______,         _______,         _______,            _______,         C(DE_Z),         C(DE_V),         C(DE_C),         C(DE_X),         C(DE_Y),         _______, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
