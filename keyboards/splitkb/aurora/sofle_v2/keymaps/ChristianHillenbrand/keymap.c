@@ -11,17 +11,6 @@ enum layers {
   L_FUN
 };
 
-// defines for shorter keycodes
-#define LT_NAV_MOUSE TD(TD_LT_NAV_MOUSE) 
-#define LT_MEDIA_SPC LT(L_MEDIA, KC_SPC)
-#define LT_NUM_ENT LT(L_NUM, KC_ENT)
-#define LT_FUN_SFT TD(TD_LT_FUN_SFT)
-
-#define DE_A_AE LT(0, DE_A)
-#define DE_O_OE LT(0, DE_O)
-#define DE_U_UE LT(0, DE_U)
-#define DE_S_SS LT(0, DE_S)
-
 /*************
  * CAPS WORD *
  *************/
@@ -29,6 +18,9 @@ enum layers {
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
     case KC_A ... KC_Z:
+    case DE_ADIA:
+    case DE_ODIA:
+    case DE_UDIA:
     case DE_MINS:
       add_weak_mods(MOD_BIT(KC_LSFT));
       return true;
@@ -44,42 +36,49 @@ bool caps_word_press_user(uint16_t keycode) {
   }
 }
 
-/*****************
- * KEY OVERRIDES *
- *****************/
+/*************
+ * TAP HOLDS *
+ *************/
 
-const key_override_t shift_bspc_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
-const key_override_t ralt_bspc_override  = ko_make_basic(MOD_BIT(KC_RALT), KC_BSPC, DE_BSLS);
-const key_override_t shift_lprn_override = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_8), DE_LABK);
-const key_override_t shift_rprn_override = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_9), LSFT(DE_LABK));
-const key_override_t shift_lbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_LBRC, DE_LCBR);
-const key_override_t shift_rbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_RBRC, DE_RCBR);
+#define DE_A_AE LT(0, DE_A)
+#define DE_O_OE LT(0, DE_O)
+#define DE_U_UE LT(0, DE_U)
+#define DE_S_SS LT(0, DE_S)
 
-const key_override_t **key_overrides = (const key_override_t *[]){
-  &shift_bspc_override,
-  &ralt_bspc_override,
-  &shift_lprn_override,
-  &shift_rprn_override,
-  &shift_lbrc_override,
-  &shift_rbrc_override,
-  NULL // null termination
-};
+#define NAV_LEFT LT(0, KC_LEFT)
+#define NAV_RGHT LT(0, KC_RGHT)
+#define NAV_UP LT(0, KC_UP)
+#define NAV_DOWN LT(0, KC_DOWN)
+#define NAV_BSPC LT(0, KC_BSPC)
+#define NAV_DEL LT(0, KC_DEL)
 
-/**********
- * COMBOS *
- **********/
+bool perform_tap_hold(keyrecord_t* record, uint16_t hold_keycode)
+{
+  if (!record->tap.count && record->event.pressed) {
+    tap_code16(hold_keycode);
+    return false;
+  }
+  return true;
+}
 
-const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
-const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
-const uint16_t PROGMEM lbrc_combo[] = {DE_S_SS, DE_D, COMBO_END};
-const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
+bool process_record_user(uint16_t keycode, keyrecord_t* record) {
+  switch (keycode) {
+    case DE_A_AE: return perform_tap_hold(record, DE_ADIA);
+    case DE_O_OE: return perform_tap_hold(record, DE_ODIA);
+    case DE_U_UE: return perform_tap_hold(record, DE_UDIA);
+    case DE_S_SS: return perform_tap_hold(record, DE_SS);
 
-combo_t key_combos[] = {
-  COMBO(lprn_combo, LSFT(DE_8)),
-  COMBO(rprn_combo, LSFT(DE_9)),
-  COMBO(lbrc_combo, DE_LBRC),
-  COMBO(rbrc_combo, DE_RBRC),
-};
+    case NAV_LEFT: return perform_tap_hold(record, KC_HOME);
+    case NAV_RGHT: return perform_tap_hold(record, KC_END);
+    case NAV_UP: return perform_tap_hold(record, C(KC_HOME));
+    case NAV_DOWN: return perform_tap_hold(record, C(KC_END));
+    case NAV_BSPC: return perform_tap_hold(record, C(KC_BSPC));
+    case NAV_DEL: return perform_tap_hold(record, C(KC_DEL));
+
+    default: 
+      return true;
+  }
+}
 
 /**************
  * TAP DANCES *
@@ -113,19 +112,42 @@ td_state_t cur_dance(tap_dance_state_t* state) {
   return TD_UNKNOWN;
 }
 
+void lt_media_cw_finished(tap_dance_state_t *state, void *user_data) {
+  td_state = cur_dance(state);
+  switch (td_state) {
+    case TD_SINGLE_TAP:
+      caps_word_on();
+      break;
+
+    case TD_SINGLE_HOLD:
+      layer_on(L_MEDIA);
+      break;
+
+    default:
+      break;
+  }
+}
+
+void lt_media_cw_reset(tap_dance_state_t *state, void *user_data) {
+  switch (td_state) {
+    case TD_SINGLE_HOLD:
+      layer_off(L_MEDIA);
+      break;
+
+    default:
+      break;
+  }
+}
+
 void lt_fun_sft_finished(tap_dance_state_t *state, void *user_data) {
   td_state = cur_dance(state);
   switch (td_state) {
     case TD_SINGLE_TAP:
-      set_oneshot_mods(get_oneshot_mods() | MOD_LSFT);
+      add_oneshot_mods(MOD_LSFT);
       break;
 
     case TD_SINGLE_HOLD:
       layer_on(L_FUN);
-      break;
-
-    case TD_DOUBLE_TAP:
-      caps_word_on();
       break;
 
     default:
@@ -144,19 +166,15 @@ void lt_fun_sft_reset(tap_dance_state_t *state, void *user_data) {
   }
 }
 
-void lt_nav_mouse_finished(tap_dance_state_t *state, void *user_data) {
+void mt_mouse_ralt_finished(tap_dance_state_t *state, void *user_data) {
   td_state = cur_dance(state);
-
   switch (td_state) {
     case TD_SINGLE_TAP:
-      if (IS_LAYER_OFF(L_MOUSE))
-        layer_on(L_MOUSE);
-      else
-        layer_off(L_MOUSE);
+      layer_on(L_MOUSE);
       break;
 
     case TD_SINGLE_HOLD:
-      layer_on(L_NAV);
+      add_mods(MOD_RALT);
       break;
 
     default:
@@ -164,12 +182,12 @@ void lt_nav_mouse_finished(tap_dance_state_t *state, void *user_data) {
   }
 }
 
-void lt_nav_mouse_reset(tap_dance_state_t *state, void *user_data) {
+void mt_mouse_ralt_reset(tap_dance_state_t *state, void *user_data) {
   switch (td_state) {
     case TD_SINGLE_HOLD:
-      layer_off(L_NAV);
+      del_mods(MOD_RALT);
       break;
-      
+
     default:
       break;
   }
@@ -177,58 +195,27 @@ void lt_nav_mouse_reset(tap_dance_state_t *state, void *user_data) {
 
 enum tap_dances{
   TD_BOOT = 0,
+  TD_LT_MEDIA_CW,
   TD_LT_FUN_SFT,
-  TD_LT_NAV_MOUSE
+  TD_MT_MOUSE_RALT
 };
 
 tap_dance_action_t tap_dance_actions[] = { 
   [TD_BOOT] = ACTION_TAP_DANCE_FN(td_fn_boot),
+  [TD_LT_MEDIA_CW] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, lt_media_cw_finished, lt_media_cw_reset),
   [TD_LT_FUN_SFT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, lt_fun_sft_finished, lt_fun_sft_reset),
-  [TD_LT_NAV_MOUSE] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, lt_nav_mouse_finished, lt_nav_mouse_reset)
+  [TD_MT_MOUSE_RALT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, mt_mouse_ralt_finished, mt_mouse_ralt_reset)
 };
 
-/****************
- * SPECIAL KEYS *
- ****************/
+/*********************
+ * TAP HOLD SETTINGS *
+ *********************/
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case DE_A_AE:
-      if (!record->tap.count && record->event.pressed) {
-        tap_code16(DE_ADIA);
-        return false;
-      }
-      return true;
-
-    case DE_O_OE:
-      if (!record->tap.count && record->event.pressed) {
-        tap_code16(DE_ODIA);
-        return false;
-      }
-      return true;
-    
-    case DE_U_UE:
-      if (!record->tap.count && record->event.pressed) {
-        tap_code16(DE_UDIA);
-        return false;
-      }
-      return true;
-
-    case DE_S_SS:
-      if (!record->tap.count && record->event.pressed) {
-        tap_code16(DE_SS);
-        return false;
-      }
-      return true;
-
-    default: 
-      return true;
-  }
-}
-
-/**********************
- * TAP HOLD BEHAVIORS *
- **********************/
+#define LT_NAV_SPC LT(L_NAV, KC_SPC)
+#define LT_MEDIA_CW TD(TD_LT_MEDIA_CW)
+#define LT_NUM_ENT LT(L_NUM, KC_ENT)
+#define LT_FUN_SFT TD(TD_LT_FUN_SFT)
+#define MT_MOUSE_RALT TD(TD_MT_MOUSE_RALT)
 
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
@@ -243,16 +230,54 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case LT_NAV_MOUSE:
-    case LT_MEDIA_SPC:
+    case LT_NAV_SPC:
+    case LT_MEDIA_CW:
     case LT_NUM_ENT:
     case LT_FUN_SFT:
+    case MT_MOUSE_RALT:
       return true;
 
     default:
       return false;
   }
 }
+
+/*****************
+ * KEY OVERRIDES *
+ *****************/
+
+const key_override_t shift_bspc_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
+const key_override_t ralt_bspc_override  = ko_make_basic(MOD_BIT(KC_RALT), KC_BSPC, DE_BSLS);
+const key_override_t shift_lprn_override = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_8), DE_LABK);
+const key_override_t shift_rprn_override = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_9), LSFT(DE_LABK));
+const key_override_t shift_lbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_LBRC, DE_LCBR);
+const key_override_t shift_rbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_RBRC, DE_RCBR);
+
+const key_override_t **key_overrides = (const key_override_t *[]){
+  &shift_bspc_override,
+  &ralt_bspc_override,
+  &shift_lprn_override,
+  &shift_rprn_override,
+  &shift_lbrc_override,
+  &shift_rbrc_override,
+  NULL
+};
+
+/**********
+ * COMBOS *
+ **********/
+
+const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
+const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
+const uint16_t PROGMEM lbrc_combo[] = {DE_S_SS, DE_D, COMBO_END};
+const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
+
+combo_t key_combos[] = {
+  COMBO(lprn_combo, LSFT(DE_8)),
+  COMBO(rprn_combo, LSFT(DE_9)),
+  COMBO(lbrc_combo, DE_LBRC),
+  COMBO(rbrc_combo, DE_RBRC),
+};
 
 /**********
  * KEYMAP *
@@ -271,7 +296,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          KC_LCTL,         DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            KC_MUTE,            XXXXXXX,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS      ,   KC_RCTL, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_MOUSE,    LT_MEDIA_SPC,       LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
+                                           KC_LGUI,         KC_LALT,         MT_MOUSE_RALT,   LT_MEDIA_CW,     LT_NAV_SPC,         LT_NUM_ENT,      LT_FUN_SFT,      MT_MOUSE_RALT,   KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
@@ -297,9 +322,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         TD(TD_BOOT),     _______,         _______,         _______,         _______,                                              _______,         KC_HOME,         KC_UP,           KC_END,          _______,         _______, 
+         _______,         TD(TD_BOOT),     _______,         _______,         _______,         _______,                                              _______,         NAV_BSPC,        NAV_UP,          NAV_DEL,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         KC_LGUI,         KC_LALT,         KC_LCTL,         KC_LSFT,         KC_RALT,                                              _______,         KC_LEFT,         KC_DOWN,         KC_RGHT,         _______,         _______, 
+         _______,         KC_LGUI,         KC_LALT,         KC_LCTL,         KC_LSFT,         KC_RALT,                                              _______,         NAV_LEFT,        NAV_DOWN,        NAV_RGHT,        _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         _______,         _______,         _______,         _______,         _______,         _______,            _______,         C(DE_Z),         C(DE_V),         C(DE_C),         C(DE_X),         C(DE_Y),         _______, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
