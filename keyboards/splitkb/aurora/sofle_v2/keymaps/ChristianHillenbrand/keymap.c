@@ -22,7 +22,7 @@ bool caps_word_press_user(uint16_t keycode) {
     case DE_ODIA:
     case DE_UDIA:
     case DE_MINS:
-      add_weak_mods(MOD_BIT(KC_LSFT));
+      add_weak_mods(MOD_LSFT);
       return true;
 
     case DE_1 ... DE_0:
@@ -52,8 +52,7 @@ bool caps_word_press_user(uint16_t keycode) {
 #define NAV_BSPC LT(0, KC_BSPC)
 #define NAV_DEL LT(0, KC_DEL)
 
-bool perform_tap_hold(keyrecord_t* record, uint16_t hold_keycode)
-{
+bool tap_hold(keyrecord_t* record, uint16_t hold_keycode) {
   if (!record->tap.count && record->event.pressed) {
     tap_code16(hold_keycode);
     return false;
@@ -61,19 +60,29 @@ bool perform_tap_hold(keyrecord_t* record, uint16_t hold_keycode)
   return true;
 }
 
+bool caps_word_tap_hold(keyrecord_t* record, uint16_t keycode) {
+  if (!record->tap.count && record->event.pressed) {
+    if (is_caps_word_on())
+      add_weak_mods(MOD_BIT(KC_LSFT));
+    tap_code16(keycode);
+    return false;
+  }
+  return true;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   switch (keycode) {
-    case DE_A_AE: return perform_tap_hold(record, DE_ADIA);
-    case DE_O_OE: return perform_tap_hold(record, DE_ODIA);
-    case DE_U_UE: return perform_tap_hold(record, DE_UDIA);
-    case DE_S_SS: return perform_tap_hold(record, DE_SS);
+    case DE_A_AE: return caps_word_tap_hold(record, DE_ADIA);
+    case DE_O_OE: return caps_word_tap_hold(record, DE_ODIA);
+    case DE_U_UE: return caps_word_tap_hold(record, DE_UDIA);
+    case DE_S_SS: return tap_hold(record, DE_SS);
 
-    case NAV_LEFT: return perform_tap_hold(record, KC_HOME);
-    case NAV_RGHT: return perform_tap_hold(record, KC_END);
-    case NAV_UP:   return perform_tap_hold(record, C(KC_HOME));
-    case NAV_DOWN: return perform_tap_hold(record, C(KC_END));
-    case NAV_BSPC: return perform_tap_hold(record, C(KC_BSPC));
-    case NAV_DEL:  return perform_tap_hold(record, C(KC_DEL));
+    case NAV_LEFT: return tap_hold(record, KC_HOME);
+    case NAV_RGHT: return tap_hold(record, KC_END);
+    case NAV_UP:   return tap_hold(record, C(KC_HOME));
+    case NAV_DOWN: return tap_hold(record, C(KC_END));
+    case NAV_BSPC: return tap_hold(record, C(KC_BSPC));
+    case NAV_DEL:  return tap_hold(record, C(KC_DEL));
 
     default: 
       return true;
@@ -143,7 +152,7 @@ void lt_fun_sft_finished(tap_dance_state_t *state, void *user_data) {
   td_state = cur_dance(state);
   switch (td_state) {
     case TD_SINGLE_TAP:
-      add_oneshot_mods(MOD_LSFT);
+      add_oneshot_mods(MOD_BIT(KC_LSFT));
       break;
 
     case TD_SINGLE_HOLD:
@@ -177,7 +186,7 @@ void mt_mouse_ralt_finished(tap_dance_state_t *state, void *user_data) {
       break;
 
     case TD_SINGLE_HOLD:
-      add_mods(MOD_RALT);
+      add_mods(MOD_BIT(KC_RALT));
       break;
 
     default:
@@ -188,7 +197,7 @@ void mt_mouse_ralt_finished(tap_dance_state_t *state, void *user_data) {
 void mt_mouse_ralt_reset(tap_dance_state_t *state, void *user_data) {
   switch (td_state) {
     case TD_SINGLE_HOLD:
-      del_mods(MOD_RALT);
+      del_mods(MOD_BIT(KC_RALT));
       break;
 
     default:
