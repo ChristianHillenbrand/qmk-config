@@ -4,7 +4,7 @@
 
 enum layers {
   L_BASE = 0,
-  L_MOUSE,
+    L_MOUSE,
   L_NAV,
   L_MEDIA,
   L_NUM,
@@ -20,7 +20,7 @@ void keyboard_pre_init_user(void) {
   writePinHigh(24);
 }
 
-/*************yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+/*************
  * CAPS WORD *
  *************/
 
@@ -139,7 +139,7 @@ td_state_t cur_dance(tap_dance_state_t* state) {
   return TD_UNKNOWN;
 }
 
-void lt_media_sft_finished(tap_dance_state_t *state, void *user_data) {
+void td_media_sft_finished(tap_dance_state_t *state, void *user_data) {
   td_state = cur_dance(state);
   switch (td_state) {
     case TD_SINGLE_TAP:
@@ -150,12 +150,16 @@ void lt_media_sft_finished(tap_dance_state_t *state, void *user_data) {
       layer_on(L_MEDIA);
       break;
 
+    case TD_DOUBLE_TAP:
+      caps_word_toggle();
+      break;
+
     default:
       break;
   }
 }
 
-void lt_media_sft_reset(tap_dance_state_t *state, void *user_data) {
+void td_media_sft_reset(tap_dance_state_t *state, void *user_data) {
   switch (td_state) {
     case TD_SINGLE_HOLD:
       layer_off(L_MEDIA);
@@ -166,7 +170,7 @@ void lt_media_sft_reset(tap_dance_state_t *state, void *user_data) {
   }
 }
 
-void lt_fun_sft_finished(tap_dance_state_t *state, void *user_data) {
+void td_fun_sft_finished(tap_dance_state_t *state, void *user_data) {
   td_state = cur_dance(state);
   switch (td_state) {
     case TD_SINGLE_TAP:
@@ -177,12 +181,16 @@ void lt_fun_sft_finished(tap_dance_state_t *state, void *user_data) {
       layer_on(L_FUN);
       break;
 
+    case TD_DOUBLE_TAP:
+      caps_word_toggle();
+      break;
+
     default:
       break;
   }
 }
 
-void lt_fun_sft_reset(tap_dance_state_t *state, void *user_data) {
+void td_fun_sft_reset(tap_dance_state_t *state, void *user_data) {
   switch (td_state) {
     case TD_SINGLE_HOLD:
       layer_off(L_FUN);
@@ -193,26 +201,26 @@ void lt_fun_sft_reset(tap_dance_state_t *state, void *user_data) {
   }
 }
 
-void mt_sft_mouse_finished(tap_dance_state_t *state, void *user_data) {
+void td_ctrl_mouse_finished(tap_dance_state_t *state, void *user_data) {
   td_state = cur_dance(state);
   switch (td_state) {
-    case TD_SINGLE_TAP:
-      IS_LAYER_OFF(L_MOUSE) ? layer_on(L_MOUSE) : layer_off(L_MOUSE);
+    case TD_SINGLE_HOLD:
+      add_mods(MOD_MASK_CTRL);
       break;
 
-    case TD_SINGLE_HOLD:
-      add_mods(MOD_MASK_SHIFT);
-      break;
+    case TD_DOUBLE_TAP:
+      IS_LAYER_OFF(L_MOUSE) ? layer_on(L_MOUSE) : layer_off(L_MOUSE);
+      break;      
 
     default:
       break;
   }
 }
 
-void mt_sft_mouse_reset(tap_dance_state_t *state, void *user_data) {
+void td_ctrl_mouse_reset(tap_dance_state_t *state, void *user_data) {
   switch (td_state) {
     case TD_SINGLE_HOLD:
-      del_mods(MOD_MASK_SHIFT);
+      del_mods(MOD_MASK_CTRL);
       break;
 
     default:
@@ -221,33 +229,36 @@ void mt_sft_mouse_reset(tap_dance_state_t *state, void *user_data) {
 }
 
 enum tap_dances{
-  TD_BOOT = 0,
-  TD_LT_MEDIA_SFT,
-  TD_LT_FUN_SFT,
-  TD_MT_SFT_MOUSE
+  TD_BOOT_ = 0,
+  TD_MEDIA_SFT_,
+  TD_FUN_SFT_,
+  TD_CTRL_MOUSE_
 };
 
 tap_dance_action_t tap_dance_actions[] = { 
-  [TD_BOOT] = ACTION_TAP_DANCE_FN(td_fn_boot),
-  [TD_LT_MEDIA_SFT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, lt_media_sft_finished, lt_media_sft_reset),
-  [TD_LT_FUN_SFT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, lt_fun_sft_finished, lt_fun_sft_reset),
-  [TD_MT_SFT_MOUSE] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, mt_sft_mouse_finished, mt_sft_mouse_reset)
+  [TD_BOOT_] = ACTION_TAP_DANCE_FN(td_fn_boot),
+  [TD_MEDIA_SFT_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_media_sft_finished, td_media_sft_reset),
+  [TD_FUN_SFT_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_fun_sft_finished, td_fun_sft_reset),
+  [TD_CTRL_MOUSE_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_ctrl_mouse_finished, td_ctrl_mouse_reset)
 };
+
+#define TD_BOOT TD(TD_BOOT_)
+#define TD_MEDIA_SFT TD(TD_MEDIA_SFT_)
+#define TD_FUN_SFT TD(TD_FUN_SFT_)
+#define TD_CTRL_MOUSE TD(TD_CTRL_MOUSE_)
 
 /*********************
  * TAP HOLD SETTINGS *
  *********************/
 
 #define LT_NAV_SPC LT(L_NAV, KC_SPC)
-#define LT_MEDIA_SFT TD(TD_LT_MEDIA_SFT)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
-#define LT_FUN_SFT TD(TD_LT_FUN_SFT)
-
-#define MT_SFT_MOUSE TD(TD_MT_SFT_MOUSE)
 
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case MT_SFT_MOUSE:
+    case SFT_T(DE_LABK):
+    case SFT_T(DE_HASH):
+    case TD_CTRL_MOUSE:
       return true;
 
     default:
@@ -258,9 +269,9 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case LT_NAV_SPC:
-    case LT_MEDIA_SFT:
     case LT_NUM_ENT:
-    case LT_FUN_SFT:
+    case TD_MEDIA_SFT:
+    case TD_FUN_SFT:
       return true;
 
     default:
@@ -293,7 +304,7 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
-const uint16_t PROGMEM caps_word_combo[] = {LT_MEDIA_SFT, LT_FUN_SFT, COMBO_END};
+const uint16_t PROGMEM caps_word_combo[] = {TD_MEDIA_SFT, TD_FUN_SFT, COMBO_END};
 
 const uint16_t PROGMEM esc_combo[] = {DE_W, DE_E, COMBO_END};
 const uint16_t PROGMEM tab_combo[]  = {DE_E, DE_R, COMBO_END};
@@ -338,11 +349,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
          KC_TAB,          DE_Q,            DE_W,            DE_E,            DE_R,            DE_T,                                                 DE_Z,            DE_U_UE,         DE_I,            DE_O_OE,         DE_P,            KC_DEL, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         DE_LABK,         DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH, 
+         SFT_T(DE_LABK),  DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         SFT_T(DE_HASH), 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         MT_SFT_MOUSE,    DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            KC_MUTE,            XXXXXXX,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS      ,   MT_SFT_MOUSE, 
+         TD_CTRL_MOUSE,   DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            KC_MUTE,            XXXXXXX,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         TD_CTRL_MOUSE, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         OSM(MOD_LCTL),   LT_MEDIA_SFT,    LT_NAV_SPC,         LT_NUM_ENT,      LT_FUN_SFT,      OSM(MOD_RCTL),   KC_LALT,         KC_RGUI
+                                           KC_LGUI,         KC_LALT,         KC_LCTL,         TD_MEDIA_SFT,    LT_NAV_SPC,         LT_NUM_ENT,      TD_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
@@ -350,7 +361,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [L_MOUSE] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         _______,         _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         _______, 
+         TG(L_MOUSE),     _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         TG(L_MOUSE), 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
          _______,         KC_WH_L,         KC_WH_D,         KC_WH_U,         KC_WH_R,         _______,                                              _______,         KC_WH_L,         KC_WH_D,         KC_WH_U,         KC_WH_R,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
