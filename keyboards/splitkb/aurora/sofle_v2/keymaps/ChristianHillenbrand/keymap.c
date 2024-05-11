@@ -4,9 +4,8 @@
 
 enum layers {
   L_BASE = 0,
-    L_MOUSE,
+  L_MOUSE,
   L_NAV,
-  L_MEDIA,
   L_NUM,
   L_FUN
 };
@@ -63,13 +62,6 @@ void caps_word_set_user(bool active) {
 #define DE_U_UE LT(0, DE_U)
 #define DE_S_SS LT(0, DE_S)
 
-#define NAV_LEFT LT(0, KC_LEFT)
-#define NAV_RGHT LT(0, KC_RGHT)
-#define NAV_UP LT(0, KC_UP)
-#define NAV_DOWN LT(0, KC_DOWN)
-#define NAV_BSPC LT(0, KC_BSPC)
-#define NAV_DEL LT(0, KC_DEL)
-
 bool tap_hold(keyrecord_t* record, uint16_t hold_keycode) {
   if (!record->tap.count && record->event.pressed) {
     tap_code16(hold_keycode);
@@ -94,13 +86,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     case DE_O_OE: return caps_word_tap_hold(record, DE_ODIA);
     case DE_U_UE: return caps_word_tap_hold(record, DE_UDIA);
     case DE_S_SS: return tap_hold(record, DE_SS);
-
-    case NAV_LEFT: return tap_hold(record, KC_HOME);
-    case NAV_RGHT: return tap_hold(record, KC_END);
-    case NAV_UP:   return tap_hold(record, C(KC_HOME));
-    case NAV_DOWN: return tap_hold(record, C(KC_END));
-    case NAV_BSPC: return tap_hold(record, C(KC_BSPC));
-    case NAV_DEL:  return tap_hold(record, C(KC_DEL));
 
     default: 
       return true;
@@ -139,7 +124,7 @@ td_state_t cur_dance(tap_dance_state_t* state) {
   return TD_UNKNOWN;
 }
 
-void td_media_sft_finished(tap_dance_state_t *state, void *user_data) {
+void td_nav_sft_finished(tap_dance_state_t *state, void *user_data) {
   td_state = cur_dance(state);
   switch (td_state) {
     case TD_SINGLE_TAP:
@@ -147,7 +132,7 @@ void td_media_sft_finished(tap_dance_state_t *state, void *user_data) {
       break;
 
     case TD_SINGLE_HOLD:
-      layer_on(L_MEDIA);
+      layer_on(L_NAV);
       break;
 
     case TD_DOUBLE_TAP:
@@ -159,10 +144,10 @@ void td_media_sft_finished(tap_dance_state_t *state, void *user_data) {
   }
 }
 
-void td_media_sft_reset(tap_dance_state_t *state, void *user_data) {
+void td_nav_sft_reset(tap_dance_state_t *state, void *user_data) {
   switch (td_state) {
     case TD_SINGLE_HOLD:
-      layer_off(L_MEDIA);
+      layer_off(L_NAV);
       break;
 
     default:
@@ -208,7 +193,7 @@ void td_ctrl_mouse_finished(tap_dance_state_t *state, void *user_data) {
       add_mods(MOD_MASK_CTRL);
       break;
 
-    case TD_DOUBLE_TAP:
+    case TD_SINGLE_TAP:
       IS_LAYER_OFF(L_MOUSE) ? layer_on(L_MOUSE) : layer_off(L_MOUSE);
       break;      
 
@@ -230,20 +215,20 @@ void td_ctrl_mouse_reset(tap_dance_state_t *state, void *user_data) {
 
 enum tap_dances{
   TD_BOOT_ = 0,
-  TD_MEDIA_SFT_,
+  TD_NAV_SFT_,
   TD_FUN_SFT_,
   TD_CTRL_MOUSE_
 };
 
 tap_dance_action_t tap_dance_actions[] = { 
   [TD_BOOT_] = ACTION_TAP_DANCE_FN(td_fn_boot),
-  [TD_MEDIA_SFT_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_media_sft_finished, td_media_sft_reset),
+  [TD_NAV_SFT_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_nav_sft_finished, td_nav_sft_reset),
   [TD_FUN_SFT_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_fun_sft_finished, td_fun_sft_reset),
   [TD_CTRL_MOUSE_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_ctrl_mouse_finished, td_ctrl_mouse_reset)
 };
 
 #define TD_BOOT TD(TD_BOOT_)
-#define TD_MEDIA_SFT TD(TD_MEDIA_SFT_)
+#define TD_NAV_SFT TD(TD_NAV_SFT_)
 #define TD_FUN_SFT TD(TD_FUN_SFT_)
 #define TD_CTRL_MOUSE TD(TD_CTRL_MOUSE_)
 
@@ -251,7 +236,6 @@ tap_dance_action_t tap_dance_actions[] = {
  * TAP HOLD SETTINGS *
  *********************/
 
-#define LT_NAV_SPC LT(L_NAV, KC_SPC)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
 
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
@@ -268,9 +252,8 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case LT_NAV_SPC:
+    case TD_NAV_SFT:
     case LT_NUM_ENT:
-    case TD_MEDIA_SFT:
     case TD_FUN_SFT:
       return true;
 
@@ -304,7 +287,7 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
-const uint16_t PROGMEM caps_word_combo[] = {TD_MEDIA_SFT, TD_FUN_SFT, COMBO_END};
+const uint16_t PROGMEM caps_word_combo[] = {TD_NAV_SFT, TD_FUN_SFT, COMBO_END};
 
 const uint16_t PROGMEM esc_combo[] = {DE_W, DE_E, COMBO_END};
 const uint16_t PROGMEM tab_combo[]  = {DE_E, DE_R, COMBO_END};
@@ -351,9 +334,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          SFT_T(DE_LABK),  DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         SFT_T(DE_HASH), 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         TD_CTRL_MOUSE,   DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            KC_MUTE,            XXXXXXX,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         TD_CTRL_MOUSE, 
+         TD_CTRL_MOUSE,   DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         TD_CTRL_MOUSE, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         KC_LCTL,         TD_MEDIA_SFT,    LT_NAV_SPC,         LT_NUM_ENT,      TD_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
+                                           KC_LGUI,         KC_LALT,         KC_LCTL,         TD_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      TD_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
@@ -376,9 +359,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [L_NAV] = LAYOUT(
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         _______,         _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         _______, 
+         _______,         _______,         _______,         _______,         _______,         _______,                                              RGB_TOG,         RGB_MOD,         RGB_HUI,         RGB_SAI,         RGB_VAI,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         TD(TD_BOOT),     _______,         _______,         _______,         _______,                                              _______,         KC_HOME,         KC_UP,           KC_END,          _______,         _______, 
+         _______,         TD_BOOT,         _______,         _______,         _______,         _______,                                              _______,         KC_HOME,         KC_UP,           KC_END,          _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,                                              _______,         KC_LEFT,         KC_DOWN,         KC_RGHT,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
@@ -389,28 +372,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   ),
 
-  [L_MEDIA] = LAYOUT(
-
-    // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         _______,         _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         _______,
-    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         TD(TD_BOOT),     _______,         _______,         _______,         _______,                                              RGB_TOG,         _______,         KC_VOLU,         _______,         _______,         _______,
-    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,                                              _______,         KC_MPRV,         KC_VOLD,         KC_MNXT,         _______,         _______, 
-    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         _______,         _______,         _______,         _______,         _______,         _______,            _______,         RGB_MOD,         RGB_HUI,         RGB_SAI,         RGB_VAI,         RGB_SPI,         _______,
-    // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           _______,         _______,         _______,         _______,         _______,            KC_MPLY,         KC_MSTP,         KC_MUTE,         _______,         _______
-    //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
-
-  ),
-
   [L_NUM] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         _______,         _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         _______, 
+         _______,         KC_MPLY,         KC_MSTP,         KC_MPRV,         KC_MNXT,         KC_MUTE,                                              _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         _______,         DE_7,            DE_8,            DE_9,            _______,                                              _______,         _______,         _______,         _______,         TD(TD_BOOT),     _______, 
+         _______,         _______,         DE_7,            DE_8,            DE_9,            _______,                                              _______,         _______,         _______,         _______,         TD_BOOT,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         _______,         DE_4,            DE_5,            DE_6,            _______,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_RALT),   OSM(MOD_RGUI),   _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
@@ -423,9 +390,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [L_FUN] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         _______,         _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         _______, 
+         _______,         KC_MPLY,         KC_MSTP,         KC_MPRV,         KC_MNXT,         KC_MUTE,                                               _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         KC_F12,          KC_F7,           KC_F8,           KC_F9,           _______,                                              _______,         _______,         _______,         _______,         TD(TD_BOOT),     _______, 
+         _______,         KC_F12,          KC_F7,           KC_F8,           KC_F9,           _______,                                              _______,         _______,         _______,         _______,         TD_BOOT,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         KC_F11,          KC_F4,           KC_F5,           KC_F6,           _______,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_RALT),   OSM(MOD_RGUI),   _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
