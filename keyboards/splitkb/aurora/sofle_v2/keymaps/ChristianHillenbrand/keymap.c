@@ -27,18 +27,15 @@ void keyboard_pre_init_user(void) {
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
     case KC_A ... KC_Z:
-    case DE_ADIA:
-    case DE_ODIA:
-    case DE_UDIA:
     case DE_MINS:
       add_weak_mods(MOD_LSFT);
       return true;
 
     case CW_TOGG:
     case DE_1 ... DE_0:
+    case DE_UNDS:
     case KC_BSPC:
     case KC_DEL:
-    case DE_UNDS:
       return true;
 
     default:
@@ -46,36 +43,27 @@ bool caps_word_press_user(uint16_t keycode) {
   }
 }
 
-void caps_word_set_user(bool active) {
-  if (active) { 
-    writePinLow(24);
-  } else {
-    writePinHigh(24);
-  }
-}
-
 /*************
  * TAP HOLDS *
- *************/
+ *************/ 
+
+enum custom_keycodes {
+  LT_NAV_RALT_ = SAFE_RANGE,
+  LT_FUN_SFT_
+};
 
 #define DE_A_AE LT(0, DE_A)
 #define DE_O_OE LT(0, DE_O)
 #define DE_U_UE LT(0, DE_U)
 #define DE_S_SS LT(0, DE_S)
 
-bool tap_hold(keyrecord_t* record, uint16_t hold_keycode) {
-  if (!record->tap.count && record->event.pressed) {
-    tap_code16(hold_keycode);
-    return false;
-  }
-  return true;
-}
+#define LT_NAV_RALT LT(0, LT_NAV_RALT_)
+#define LT_NUM_ENT LT(L_NUM, KC_ENT)
+#define LT_FUN_SFT LT(0, LT_FUN_SFT_)
 
-bool caps_word_tap_hold(keyrecord_t* record, uint16_t keycode) {
+bool simple_tap_hold(keyrecord_t* record, uint16_t hold_code) {
   if (!record->tap.count && record->event.pressed) {
-    if (is_caps_word_on())
-      add_weak_mods(MOD_BIT(KC_LSFT));
-    tap_code16(keycode);
+    tap_code(hold_code);
     return false;
   }
   return true;
@@ -83,13 +71,64 @@ bool caps_word_tap_hold(keyrecord_t* record, uint16_t keycode) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   switch (keycode) {
-    case DE_A_AE: return caps_word_tap_hold(record, DE_ADIA);
-    case DE_O_OE: return caps_word_tap_hold(record, DE_ODIA);
-    case DE_U_UE: return caps_word_tap_hold(record, DE_UDIA);
-    case DE_S_SS: return tap_hold(record, DE_SS);
+    case DE_A_AE: return simple_tap_hold(record, DE_ADIA);
+    case DE_O_OE: return simple_tap_hold(record, DE_ODIA);
+    case DE_U_UE: return simple_tap_hold(record, DE_UDIA);
+    case DE_S_SS: return simple_tap_hold(record, DE_SS);
 
+    case LT_NAV_RALT:
+      if (record->event.pressed) {
+        if (record->tap.count) {
+          add_oneshot_mods(MOD_BIT(KC_RALT));
+        } else {
+          layer_on(L_NAV);
+        }
+      } else {
+        if (!record->tap.count) {
+          layer_off(L_NAV);
+        }
+      }
+      return false;
+
+    case LT_FUN_SFT:
+      if (record->event.pressed) {
+        if (record->tap.count) {
+          if (get_oneshot_mods() & MOD_MASK_SHIFT) {
+            del_oneshot_mods(MOD_MASK_SHIFT);
+            caps_word_toggle();
+          } else {
+            add_oneshot_mods(MOD_MASK_SHIFT);
+          }
+        } else {
+          layer_on(L_FUN);
+        }
+      } else {
+        if (!record->tap.count) {
+          layer_off(L_FUN);
+        }
+      }
+      return false;
+    
     default: 
       return true;
+  }
+}
+
+/*********************
+ * TAP HOLD SETTINGS *
+ *********************/
+
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case SFT_T(DE_LABK):
+    case SFT_T(DE_HASH):
+    case LT_NAV_RALT:
+    case LT_NUM_ENT:
+    case LT_FUN_SFT:
+      return true;
+
+    default:
+      return false;
   }
 }
 
@@ -97,221 +136,48 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
  * TAP DANCES *
  **************/
 
-typedef enum {
-    TD_UNKNOWN,
-    TD_SINGLE_TAP,
-    TD_SINGLE_HOLD,
-    TD_DOUBLE_TAP
-} td_state_t;
-
-static td_state_t td_state;
-
 void td_fn_boot(tap_dance_state_t *state, void *user_data) {
   if (state->count == 2) {
     reset_keyboard();
   }
 }
 
-td_state_t cur_dance(tap_dance_state_t* state) {
-  if (state->count == 1) {
-    if (!state->pressed) 
-      return TD_SINGLE_TAP;
-    else 
-      return TD_SINGLE_HOLD;
-  }
-  else if (state->count == 2) {
-    return TD_DOUBLE_TAP;
-  }
-  return TD_UNKNOWN;
-}
-
-void td_nav_sft_finished(tap_dance_state_t *state, void *user_data) {
-  td_state = cur_dance(state);
-  switch (td_state) {
-    case TD_SINGLE_TAP:
-      add_oneshot_mods(MOD_MASK_SHIFT);
-      break;
-
-    case TD_SINGLE_HOLD:
-      layer_on(L_NAV);
-      break;
-
-    case TD_DOUBLE_TAP:
-      caps_word_toggle();
-      break;
-
-    default:
-      break;
-  }
-}
-
-void td_nav_sft_reset(tap_dance_state_t *state, void *user_data) {
-  switch (td_state) {
-    case TD_SINGLE_HOLD:
-      layer_off(L_NAV);
-      break;
-
-    default:
-      break;
-  }
-}
-
-void td_fun_sft_finished(tap_dance_state_t *state, void *user_data) {
-  td_state = cur_dance(state);
-  switch (td_state) {
-    case TD_SINGLE_TAP:
-      add_oneshot_mods(MOD_MASK_SHIFT);
-      break;
-
-    case TD_SINGLE_HOLD:
-      layer_on(L_FUN);
-      break;
-
-    case TD_DOUBLE_TAP:
-      caps_word_toggle();
-      break;
-
-    default:
-      break;
-  }
-}
-
-void td_fun_sft_reset(tap_dance_state_t *state, void *user_data) {
-  switch (td_state) {
-    case TD_SINGLE_HOLD:
-      layer_off(L_FUN);
-      break;
-
-    default:
-      break;
-  }
-}
-
-void td_ctrl_mouse_l_finished(tap_dance_state_t *state, void *user_data) {
-  td_state = cur_dance(state);
-  switch (td_state) {
-    case TD_SINGLE_HOLD:
-      add_mods(MOD_MASK_CTRL);
-      break;
-
-    case TD_SINGLE_TAP:
-      IS_LAYER_OFF(L_MOUSE_L) ? layer_on(L_MOUSE_L) : layer_off(L_MOUSE_L);
-      break;      
-
-    default:
-      break;
-  }
-}
-
-void td_ctrl_mouse_l_reset(tap_dance_state_t *state, void *user_data) {
-  switch (td_state) {
-    case TD_SINGLE_HOLD:
-      del_mods(MOD_MASK_CTRL);
-      break;
-
-    default:
-      break;
-  }
-}
-
-void td_ctrl_mouse_r_finished(tap_dance_state_t *state, void *user_data) {
-  td_state = cur_dance(state);
-  switch (td_state) {
-    case TD_SINGLE_HOLD:
-      add_mods(MOD_MASK_CTRL);
-      break;
-
-    case TD_SINGLE_TAP:
-      IS_LAYER_OFF(L_MOUSE_R) ? layer_on(L_MOUSE_R) : layer_off(L_MOUSE_R);
-      break;      
-
-    default:
-      break;
-  }
-}
-
-void td_ctrl_mouse_r_reset(tap_dance_state_t *state, void *user_data) {
-  switch (td_state) {
-    case TD_SINGLE_HOLD:
-      del_mods(MOD_MASK_CTRL);
-      break;
-
-    default:
-      break;
-  }
-}
-
 enum tap_dances{
-  TD_BOOT_ = 0,
-  TD_NAV_SFT_,
-  TD_FUN_SFT_,
-  TD_CTRL_MOUSE_L_,
-  TD_CTRL_MOUSE_R_
+  TD_BOOT_ = 0
 };
 
 tap_dance_action_t tap_dance_actions[] = { 
-  [TD_BOOT_] = ACTION_TAP_DANCE_FN(td_fn_boot),
-  [TD_NAV_SFT_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_nav_sft_finished, td_nav_sft_reset),
-  [TD_FUN_SFT_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_fun_sft_finished, td_fun_sft_reset),
-  [TD_CTRL_MOUSE_L_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_ctrl_mouse_l_finished, td_ctrl_mouse_l_reset),
-  [TD_CTRL_MOUSE_R_] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_ctrl_mouse_r_finished, td_ctrl_mouse_r_reset)
+  [TD_BOOT_] = ACTION_TAP_DANCE_FN(td_fn_boot)
 };
 
 #define TD_BOOT TD(TD_BOOT_)
-#define TD_NAV_SFT TD(TD_NAV_SFT_)
-#define TD_FUN_SFT TD(TD_FUN_SFT_)
-#define TD_CTRL_MOUSE_L TD(TD_CTRL_MOUSE_L_)
-#define TD_CTRL_MOUSE_R TD(TD_CTRL_MOUSE_R_)
-
-/*********************
- * TAP HOLD SETTINGS *
- *********************/
-
-#define LT_NUM_ENT LT(L_NUM, KC_ENT)
-
-bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case SFT_T(DE_LABK):
-    case SFT_T(DE_HASH):
-    case TD_CTRL_MOUSE_L:
-    case TD_CTRL_MOUSE_R:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
-bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case TD_NAV_SFT:
-    case LT_NUM_ENT:
-    case TD_FUN_SFT:
-      return true;
-
-    default:
-      return false;
-  }
-}
 
 /*****************
  * KEY OVERRIDES *
  *****************/
 
-const key_override_t shift_bspc_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
-const key_override_t ralt_bspc_override  = ko_make_basic(MOD_BIT(KC_RALT), KC_BSPC, DE_BSLS);
-const key_override_t shift_lprn_override = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_8), DE_LABK);
-const key_override_t shift_rprn_override = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_9), LSFT(DE_LABK));
-const key_override_t shift_lbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_LBRC, DE_LCBR);
-const key_override_t shift_rbrc_override = ko_make_basic(MOD_MASK_SHIFT, DE_RBRC, DE_RCBR);
+const key_override_t ralt_a = ko_make_basic(MOD_BIT(KC_RALT), KC_A, DE_ADIA);
+const key_override_t ralt_o = ko_make_basic(MOD_BIT(KC_RALT), KC_O, DE_ODIA);
+const key_override_t ralt_u = ko_make_basic(MOD_BIT(KC_RALT), KC_U, DE_UDIA);
+const key_override_t ralt_s = ko_make_basic(MOD_BIT(KC_RALT), KC_S, DE_SS);
+const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
+const key_override_t ralt_bspc  = ko_make_basic(MOD_BIT(KC_RALT), KC_BSPC, DE_BSLS);
+const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_8), DE_LABK);
+const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_9), LSFT(DE_LABK));
+const key_override_t shift_lbrc = ko_make_basic(MOD_MASK_SHIFT, DE_LBRC, DE_LCBR);
+const key_override_t shift_rbrc = ko_make_basic(MOD_MASK_SHIFT, DE_RBRC, DE_RCBR);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
-  &shift_bspc_override,
-  &ralt_bspc_override,
-  &shift_lprn_override,
-  &shift_rprn_override,
-  &shift_lbrc_override,
-  &shift_rbrc_override,
+  &ralt_a,
+  &ralt_o,
+  &ralt_u,
+  &ralt_s,
+  &shift_bspc,
+  &ralt_bspc,
+  &shift_lprn,
+  &shift_rprn,
+  &shift_lbrc,
+  &shift_rbrc,
   NULL
 };
 
@@ -321,24 +187,24 @@ const key_override_t **key_overrides = (const key_override_t *[]){
 
 const uint16_t PROGMEM esc_combo[] = {DE_W, DE_E, COMBO_END};
 const uint16_t PROGMEM tab_combo[]  = {DE_E, DE_R, COMBO_END};
-const uint16_t PROGMEM lbrc_combo[] = {DE_S_SS, DE_D, COMBO_END};
+const uint16_t PROGMEM lbrc_combo[] = {DE_S, DE_D, COMBO_END};
 const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
 
-const uint16_t PROGMEM bspc_combo[] = {DE_U_UE, DE_I, COMBO_END};
-const uint16_t PROGMEM del_combo[]  = {DE_I, DE_O_OE, COMBO_END};
+const uint16_t PROGMEM bspc_combo[] = {DE_U, DE_I, COMBO_END};
+const uint16_t PROGMEM del_combo[]  = {DE_I, DE_O, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
 
 combo_t key_combos[] = {
-  COMBO(esc_combo, KC_ESC),
-  COMBO(tab_combo, KC_TAB),
   COMBO(lbrc_combo, DE_LBRC),
   COMBO(lprn_combo, LSFT(DE_8)),
+  COMBO(esc_combo, KC_ESC),
+  COMBO(tab_combo, KC_TAB),
 
-  COMBO(bspc_combo, KC_BSPC),
-  COMBO(del_combo, KC_DEL),
   COMBO(rprn_combo, LSFT(DE_9)),
   COMBO(rbrc_combo, DE_RBRC),
+  COMBO(bspc_combo, KC_BSPC),
+  COMBO(del_combo, KC_DEL)
 };
 
 /**********
@@ -352,13 +218,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          QK_GESC,         DE_1,            DE_2,            DE_3,            DE_4,            DE_5,                                                 DE_6,            DE_7,            DE_8,            DE_9,            DE_0,            KC_BSPC, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         KC_TAB,          DE_Q,            DE_W,            DE_E,            DE_R,            DE_T,                                                 DE_Z,            DE_U_UE,         DE_I,            DE_O_OE,         DE_P,            KC_DEL, 
+         KC_TAB,          DE_Q,            DE_W,            DE_E,            DE_R,            DE_T,                                                 DE_Z,            DE_U,            DE_I,            DE_O,            DE_P,            KC_DEL, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         SFT_T(DE_LABK),  DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         SFT_T(DE_HASH), 
+         SFT_T(DE_LABK),  DE_A,            DE_S,            DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         SFT_T(DE_HASH), 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         TD_CTRL_MOUSE_L, DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         TD_CTRL_MOUSE_R, 
+         KC_LCTL,         DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RCTL, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         KC_LCTL,         TD_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      TD_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
+                                           KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_RALT,     KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
@@ -399,13 +265,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                              RGB_TOG,         RGB_MOD,         RGB_HUI,         RGB_SAI,         RGB_VAI,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         TD_BOOT,         _______,         _______,         _______,         _______,                                              _______,         KC_HOME,         KC_PGDN,         KC_PGUP,         KC_END,          _______, 
+         _______,         TD_BOOT,         _______,         _______,         _______,         _______,                                              _______,         KC_HOME,         KC_UP,           KC_END,          _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,                                              _______,         KC_LEFT,         KC_DOWN,         KC_UP,           KC_RGHT,         _______, 
+         _______,         OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,                                              _______,         KC_LEFT,         KC_DOWN,         KC_RGHT,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         _______,         _______,         _______,         _______,         _______,         _______,            _______,         C(DE_Z),         C(DE_V),         C(DE_C),         C(DE_X),         C(DE_Y),         _______, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           _______,         _______,         _______,         _______,         _______,            KC_ENT,          KC_BSPC,         KC_DEL,          _______,         _______
+                                           _______,         _______,         _______,         _______,         _______,            _______,         _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
@@ -415,11 +281,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         KC_MPLY,         KC_MSTP,         KC_MPRV,         KC_MNXT,         KC_MUTE,                                              _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         KC_GRV,          DE_7,            DE_8,            DE_9,            DE_SS,                                                _______,         _______,         _______,         _______,         TD_BOOT,         _______, 
+         _______,         _______,         DE_7,            DE_8,            DE_9,            _______,                                              _______,         _______,         _______,         _______,         TD_BOOT,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         DE_LABK,         DE_4,            DE_5,            DE_6,            DE_HASH,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_RALT),   OSM(MOD_RGUI),   _______, 
+         _______,         _______,         DE_4,            DE_5,            DE_6,            _______,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_RALT),   OSM(MOD_RGUI),   _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         DE_LBRC,         DE_1,            DE_2,            DE_3,            DE_RBRC,         _______,            _______,         _______,         _______,         _______,         _______,         _______,         _______, 
+         _______,         _______,         DE_1,            DE_2,            DE_3,            _______,         _______,            _______,         _______,         _______,         _______,         _______,         _______,         _______, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            _______,         _______,         DE_COMM,         DE_DOT,          DE_0,               _______,         _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
