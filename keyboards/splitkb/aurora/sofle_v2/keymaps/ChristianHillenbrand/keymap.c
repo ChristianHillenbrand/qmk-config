@@ -56,45 +56,58 @@ void caps_word_set_user(bool active) {
  *************/ 
 
 enum custom_keycodes {
-  LT_NAV_RALT_ = SAFE_RANGE,
-  LT_FUN_SFT_
+  MT_SFT_MOUSE_L_ = SAFE_RANGE,
+  MT_SFT_MOUSE_R_,
+  LT_NAV_SFT_ ,
+  LT_FUN_SFT_,
 };
 
-#define DE_A_AE LT(0, DE_A)
-#define DE_O_OE LT(0, DE_O)
-#define DE_U_UE LT(0, DE_U)
-#define DE_S_SS LT(0, DE_S)
-
-#define LT_NAV_RALT LT(0, LT_NAV_RALT_)
+#define MT_SFT_MOUSE_L LT(0, MT_SFT_MOUSE_L_)
+#define MT_SFT_MOUSE_R LT(0, MT_SFT_MOUSE_R_)
+#define LT_NAV_SFT LT(0, LT_NAV_SFT_)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
 #define LT_FUN_SFT LT(0, LT_FUN_SFT_)
 
-bool simple_tap_hold(keyrecord_t* record, uint16_t hold_code) {
-  if (!record->tap.count && record->event.pressed) {
-    tap_code(hold_code);
-    return false;
-  }
-  return true;
-}
-
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   switch (keycode) {
-    case DE_A_AE: return simple_tap_hold(record, DE_ADIA);
-    case DE_O_OE: return simple_tap_hold(record, DE_ODIA);
-    case DE_U_UE: return simple_tap_hold(record, DE_UDIA);
-    case DE_S_SS: return simple_tap_hold(record, DE_SS);
-
-    case LT_NAV_RALT:
+    case MT_SFT_MOUSE_L:
       if (record->event.pressed) {
         if (record->tap.count) {
-          add_oneshot_mods(MOD_BIT(KC_RALT));
+          layer_invert(L_MOUSE_L);
+        } else {
+          add_mods(MOD_BIT(KC_LSFT));
+        }
+      } else if (!record->tap.count) {
+        del_mods(MOD_BIT(KC_LSFT));
+      }
+      return false;
+
+    case MT_SFT_MOUSE_R:
+      if (record->event.pressed) {
+        if (record->tap.count) {
+          layer_invert(L_MOUSE_R);
+        } else {
+          add_mods(MOD_BIT(KC_LSFT));
+        }
+      } else if (!record->tap.count) {
+        del_mods(MOD_BIT(KC_LSFT));
+      }
+      return false;      
+
+    case LT_NAV_SFT:
+      if (record->event.pressed) {
+        if (record->tap.count) {
+          if (get_oneshot_mods() & MOD_MASK_SHIFT) {
+            del_oneshot_mods(MOD_MASK_SHIFT);
+            caps_word_toggle();
+          } else {
+            add_oneshot_mods(MOD_MASK_SHIFT);
+          }
         } else {
           layer_on(L_NAV);
         }
-      } else {
-        if (!record->tap.count) {
-          layer_off(L_NAV);
-        }
+      } else if (!record->tap.count) {
+        layer_off(L_NAV);
       }
       return false;
 
@@ -110,10 +123,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         } else {
           layer_on(L_FUN);
         }
-      } else {
-        if (!record->tap.count) {
-          layer_off(L_FUN);
-        }
+      } else if (!record->tap.count) {
+        layer_off(L_FUN);
       }
       return false;
     
@@ -126,11 +137,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
  * TAP HOLD SETTINGS *
  *********************/
 
+bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case MT_SFT_MOUSE_L:
+    case MT_SFT_MOUSE_R:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case SFT_T(DE_LABK):
-    case SFT_T(DE_HASH):
-    case LT_NAV_RALT:
+    case LT_NAV_SFT:
     case LT_NUM_ENT:
     case LT_FUN_SFT:
       return true;
@@ -228,11 +248,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
          KC_TAB,          DE_Q,            DE_W,            DE_E,            DE_R,            DE_T,                                                 DE_Z,            DE_U,            DE_I,            DE_O,            DE_P,            KC_DEL, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         SFT_T(DE_LABK),  DE_A,            DE_S,            DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         SFT_T(DE_HASH), 
+         DE_LABK,         DE_A,            DE_S,            DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         KC_LCTL,         DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RCTL, 
+         MT_SFT_MOUSE_L,  DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         MT_SFT_MOUSE_R, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_RALT,     KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
+                                           KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
