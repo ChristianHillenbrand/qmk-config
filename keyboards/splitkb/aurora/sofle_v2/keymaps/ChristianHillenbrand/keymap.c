@@ -28,7 +28,7 @@ bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
     case KC_A ... KC_Z:
     case DE_MINS:
-      add_weak_mods(MOD_LSFT);
+      add_weak_mods(MOD_BIT(KC_LSFT));
       return true;
 
     case CW_TOGG:
@@ -56,20 +56,84 @@ void caps_word_set_user(bool active) {
  *************/ 
 
 enum custom_keycodes {
-  MT_SFT_MOUSE_L_ = SAFE_RANGE,
+  DE_A_AE_ = SAFE_RANGE,
+  DE_O_OE_,
+  DE_U_UE_,
+  DE_S_SS_,
+
+  MT_SFT_MOUSE_L_,
   MT_SFT_MOUSE_R_,
+
   LT_NAV_SFT_ ,
   LT_FUN_SFT_,
 };
 
+#define DE_A_AE LT(0, DE_A_AE_)
+#define DE_O_OE LT(0, DE_O_OE_)
+#define DE_U_UE LT(0, DE_U_UE_)
+#define DE_S_SS LT(0, DE_S_SS_)
+
 #define MT_SFT_MOUSE_L LT(0, MT_SFT_MOUSE_L_)
 #define MT_SFT_MOUSE_R LT(0, MT_SFT_MOUSE_R_)
+
 #define LT_NAV_SFT LT(0, LT_NAV_SFT_)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
 #define LT_FUN_SFT LT(0, LT_FUN_SFT_)
 
+static bool a_ae_pressed = false;
+static uint16_t a_ae_timer = 0;
+
+static bool o_oe_pressed = false;
+static uint16_t o_oe_timer = 0;
+
+static bool u_ue_pressed = false;
+static uint16_t u_ue_timer = 0;
+
+static bool s_ss_pressed = false;
+static uint16_t s_ss_timer = 0;
+
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   switch (keycode) {
+    case DE_A_AE:
+      if (record->event.pressed) {
+        tap_code(DE_A);        
+        a_ae_timer = record->event.time + TAPPING_TERM;
+        a_ae_pressed = true;
+      } else {
+        a_ae_pressed = false;
+      }
+      return false;
+
+    case DE_O_OE:
+      if (record->event.pressed) {
+        tap_code(DE_O);        
+        o_oe_timer = record->event.time + TAPPING_TERM;
+        o_oe_pressed = true;
+      } else {
+        o_oe_pressed = false;
+      }
+      return false;
+
+    case DE_U_UE:
+      if (record->event.pressed) {
+        tap_code(DE_U);
+        u_ue_timer = record->event.time + TAPPING_TERM;
+        u_ue_pressed = true;
+      } else {
+        u_ue_pressed = false;
+      }
+      return false;
+
+    case DE_S_SS:
+      if (record->event.pressed) {
+        tap_code(DE_S);
+        s_ss_timer = record->event.time + TAPPING_TERM;
+        s_ss_pressed = true;
+      } else {
+        s_ss_pressed = false;
+      }
+      return false;
+
     case MT_SFT_MOUSE_L:
       if (record->event.pressed) {
         if (record->tap.count) {
@@ -133,9 +197,48 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   }
 }
 
+void matrix_scan_user(void) {
+  if (a_ae_pressed && timer_expired(timer_read(), a_ae_timer)) {
+    tap_code(KC_BSPC);
+    tap_code(DE_ADIA);
+    a_ae_pressed = false;
+  }
+
+  if (o_oe_pressed && timer_expired(timer_read(), o_oe_timer)) {
+    tap_code(KC_BSPC);
+    tap_code(DE_ODIA);
+    o_oe_pressed = false;
+  }
+
+  if (u_ue_pressed && timer_expired(timer_read(), u_ue_timer)) {
+    tap_code(KC_BSPC);
+    tap_code(DE_UDIA);
+    u_ue_pressed = false;
+  }
+
+  if (s_ss_pressed && timer_expired(timer_read(), s_ss_timer)) {
+    tap_code(KC_BSPC);
+    tap_code(DE_SS);
+    s_ss_pressed = false;
+  }
+}
+
 /*********************
  * TAP HOLD SETTINGS *
  *********************/
+
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case DE_A_AE:
+    case DE_O_OE:
+    case DE_U_UE:
+    case DE_S_SS:
+      return 0;
+
+    default:
+      return TAPPING_TERM;
+  }
+}
 
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
@@ -184,10 +287,6 @@ tap_dance_action_t tap_dance_actions[] = {
  * KEY OVERRIDES *
  *****************/
 
-const key_override_t ralt_a = ko_make_basic(MOD_BIT(KC_RALT), KC_A, DE_ADIA);
-const key_override_t ralt_o = ko_make_basic(MOD_BIT(KC_RALT), KC_O, DE_ODIA);
-const key_override_t ralt_u = ko_make_basic(MOD_BIT(KC_RALT), KC_U, DE_UDIA);
-const key_override_t ralt_s = ko_make_basic(MOD_BIT(KC_RALT), KC_S, DE_SS);
 const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
 const key_override_t ralt_bspc  = ko_make_basic(MOD_BIT(KC_RALT), KC_BSPC, DE_BSLS);
 const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, LSFT(DE_8), DE_LABK);
@@ -196,10 +295,6 @@ const key_override_t shift_lbrc = ko_make_basic(MOD_MASK_SHIFT, DE_LBRC, DE_LCBR
 const key_override_t shift_rbrc = ko_make_basic(MOD_MASK_SHIFT, DE_RBRC, DE_RCBR);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
-  &ralt_a,
-  &ralt_o,
-  &ralt_u,
-  &ralt_s,
   &shift_bspc,
   &ralt_bspc,
   &shift_lprn,
@@ -215,11 +310,11 @@ const key_override_t **key_overrides = (const key_override_t *[]){
 
 const uint16_t PROGMEM esc_combo[] = {DE_W, DE_E, COMBO_END};
 const uint16_t PROGMEM tab_combo[]  = {DE_E, DE_R, COMBO_END};
-const uint16_t PROGMEM lbrc_combo[] = {DE_S, DE_D, COMBO_END};
+const uint16_t PROGMEM lbrc_combo[] = {DE_S_SS, DE_D, COMBO_END};
 const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
 
-const uint16_t PROGMEM bspc_combo[] = {DE_U, DE_I, COMBO_END};
-const uint16_t PROGMEM del_combo[]  = {DE_I, DE_O, COMBO_END};
+const uint16_t PROGMEM bspc_combo[] = {DE_U_UE, DE_I, COMBO_END};
+const uint16_t PROGMEM del_combo[]  = {DE_I, DE_O_OE, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
 
@@ -246,13 +341,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          QK_GESC,         DE_1,            DE_2,            DE_3,            DE_4,            DE_5,                                                 DE_6,            DE_7,            DE_8,            DE_9,            DE_0,            KC_BSPC, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         KC_TAB,          DE_Q,            DE_W,            DE_E,            DE_R,            DE_T,                                                 DE_Z,            DE_U,            DE_I,            DE_O,            DE_P,            KC_DEL, 
+         KC_TAB,          DE_Q,            DE_W,            DE_E,            DE_R,            DE_T,                                                 DE_Z,            DE_U_UE,         DE_I,            DE_O_OE,         DE_P,            KC_DEL, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         DE_LABK,         DE_A,            DE_S,            DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH, 
+         DE_LABK,         DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          MT_SFT_MOUSE_L,  DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         MT_SFT_MOUSE_R, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_RALT,         KC_RGUI
+                                           OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      OSM(MOD_RCTL),   OSM(MOD_RALT),   OSM(MOD_RGUI)
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
@@ -367,7 +462,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     for (uint8_t index = led_min; index < led_max; ++index) {
       if (g_led_config.flags[index] & LED_FLAG_UNDERGLOW) {
-        rgb_matrix_set_color(index, RGB_RED);
+        rgb_matrix_set_color(index, RGB_BLACK);
       }
     }
        
@@ -376,8 +471,8 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         uint8_t index = g_led_config.matrix_co[row][col];
 
         if (index >= led_min && index < led_max && index != NO_LED &&
-          keymap_key_to_keycode(highest_layer, (keypos_t){col,row}) > KC_TRNS) {
-            rgb_matrix_set_color(index, RGB_RED);
+          keymap_key_to_keycode(highest_layer, (keypos_t){col,row}) == KC_TRNS) {
+            rgb_matrix_set_color(index, RGB_BLACK);
         }
       }
     }
