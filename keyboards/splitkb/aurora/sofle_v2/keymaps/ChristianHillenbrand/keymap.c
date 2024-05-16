@@ -36,6 +36,7 @@ bool caps_word_press_user(uint16_t keycode) {
 
     case CW_TOGG:
     case DE_1 ... DE_0:
+    case DE_SS:
     case DE_UNDS:
     case KC_BSPC:
     case KC_DEL:
@@ -95,6 +96,9 @@ void fast_tap_hold(keyrecord_t* record, uint16_t tap_keycode, uint16_t hold_keyc
   if (record->event.pressed) {
     fast_tap_hold_mods = get_mods() | get_oneshot_mods();
 
+    if (is_caps_word_on() && !caps_word_press_user(tap_keycode)) {
+      caps_word_off();
+    }
     tap_code16(tap_keycode);
 
     if ((fast_tap_hold_mods & ~MOD_MASK_SHIFT) == 0) {
@@ -123,6 +127,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
     case DE_S_SS:
       fast_tap_hold(record, DE_S, DE_SS);
+      fast_tap_hold_mods &= ~MOD_MASK_SHIFT;
       return false;
 
     case DE_E_EURO:
@@ -194,9 +199,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
 void matrix_scan_user(void) {
   if (fast_tap_hold_pressed && timer_expired(timer_read(), fast_tap_hold_timer)) {
-    add_mods(fast_tap_hold_mods);
     tap_code16(KC_BSPC);
+
+    uint8_t cur_mods = get_mods() | get_oneshot_mods();
+    fast_tap_hold_mods &= ~cur_mods;
+    add_mods(fast_tap_hold_mods);
+
+    if (is_caps_word_on() && !caps_word_press_user(fast_tap_hold_keycode)) {
+      caps_word_off();
+    }
     tap_code16(fast_tap_hold_keycode);
+
     del_mods(fast_tap_hold_mods);
     fast_tap_hold_pressed = false;
   }
