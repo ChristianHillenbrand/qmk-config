@@ -87,19 +87,26 @@ enum custom_keycodes {
 #define LT_FUN_SFT LT(0, LT_FUN_SFT_)
 
 uint8_t fast_tap_hold_mods = 0;
+uint8_t fast_tap_hold_oneshot_mods = 0;
 uint16_t fast_tap_hold_keycode = 0;
 uint16_t fast_tap_hold_timer = 0;
 bool fast_tap_hold_pressed = false;
 
+void tap_code_caps_word(uint16_t keycode)
+{
+  if (is_caps_word_on() && !caps_word_press_user(keycode)) {
+    caps_word_off();
+  }
+  tap_code16(keycode);
+}
+
 void fast_tap_hold(keyrecord_t* record, uint16_t tap_keycode, uint16_t hold_keycode)
 {
   if (record->event.pressed) {
-    fast_tap_hold_mods = get_mods() | get_oneshot_mods();
+    fast_tap_hold_mods = get_mods(); 
+    fast_tap_hold_oneshot_mods = get_oneshot_mods();
 
-    if (is_caps_word_on() && !caps_word_press_user(tap_keycode)) {
-      caps_word_off();
-    }
-    tap_code16(tap_keycode);
+    tap_code_caps_word(tap_keycode);
 
     if ((fast_tap_hold_mods & ~MOD_MASK_SHIFT) == 0) {
       fast_tap_hold_keycode = hold_keycode;
@@ -128,21 +135,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     case DE_S_SS:
       fast_tap_hold(record, DE_S, DE_SS);
       fast_tap_hold_mods &= ~MOD_MASK_SHIFT;
+      fast_tap_hold_oneshot_mods &= ~MOD_MASK_SHIFT;
       return false;
 
     case DE_E_EURO:
       fast_tap_hold(record, DE_E, DE_EURO);
-      return false;      
+      return false;
 
     case MT_SFT_MOUSE_L:
       if (record->event.pressed) {
         if (record->tap.count) {
           layer_invert(L_MOUSE_L);
         } else {
-          add_mods(MOD_BIT(KC_LSFT));
+          register_mods(MOD_BIT(KC_LSFT));
         }
       } else if (!record->tap.count) {
-        del_mods(MOD_BIT(KC_LSFT));
+        unregister_mods(MOD_BIT(KC_LSFT));
       }
       return false;
 
@@ -151,17 +159,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         if (record->tap.count) {
           layer_invert(L_MOUSE_R);
         } else {
-          add_mods(MOD_BIT(KC_LSFT));
+          register_mods(MOD_BIT(KC_LSFT));
         }
       } else if (!record->tap.count) {
-        del_mods(MOD_BIT(KC_LSFT));
+        unregister_mods(MOD_BIT(KC_LSFT));
       }
       return false;      
 
     case LT_NAV_SFT:
       if (record->event.pressed) {
         if (record->tap.count) {
-          if (get_oneshot_mods() & MOD_MASK_SHIFT) {
+          if (is_caps_word_on()) {
+            caps_word_off();
+          } else if (get_oneshot_mods() & MOD_MASK_SHIFT) {
             del_oneshot_mods(MOD_MASK_SHIFT);
             caps_word_toggle();
           } else {
@@ -178,7 +188,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     case LT_FUN_SFT:
       if (record->event.pressed) {
         if (record->tap.count) {
-          if (get_oneshot_mods() & MOD_MASK_SHIFT) {
+          if (is_caps_word_on()) {
+            caps_word_off();
+          } else if (get_oneshot_mods() & MOD_MASK_SHIFT) {
             del_oneshot_mods(MOD_MASK_SHIFT);
             caps_word_toggle();
           } else {
@@ -202,16 +214,17 @@ void matrix_scan_user(void) {
   if (fast_tap_hold_pressed && timer_expired(timer_read(), fast_tap_hold_timer)) {
     tap_code16(KC_BSPC);
 
-    uint8_t cur_mods = get_mods() | get_oneshot_mods();
-    fast_tap_hold_mods &= ~cur_mods;
-    add_mods(fast_tap_hold_mods);
+    uint8_t cur_mods = get_mods();
+    uint8_t cur_oneshot_mods = get_oneshot_mods();
 
-    if (is_caps_word_on() && !caps_word_press_user(fast_tap_hold_keycode)) {
-      caps_word_off();
-    }
-    tap_code16(fast_tap_hold_keycode);
+    set_mods(fast_tap_hold_mods);
+    set_oneshot_mods(fast_tap_hold_oneshot_mods);
 
-    del_mods(fast_tap_hold_mods);
+    tap_code_caps_word(fast_tap_hold_keycode);
+
+    set_mods(cur_mods);
+    set_mods(cur_oneshot_mods);
+
     fast_tap_hold_pressed = false;
   }
 }
@@ -302,6 +315,8 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
+const uint16_t PROGMEM capsword_combo[] = {LT_NAV_SFT, LT_FUN_SFT, COMBO_END};
+
 const uint16_t PROGMEM esc_combo[] = {DE_W, DE_E_EURO, COMBO_END};
 const uint16_t PROGMEM tab_combo[]  = {DE_E_EURO, DE_R, COMBO_END};
 const uint16_t PROGMEM lbrc_combo[] = {DE_S_SS, DE_D, COMBO_END};
@@ -313,6 +328,8 @@ const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
 
 combo_t key_combos[] = {
+  COMBO(capsword_combo, CW_TOGG),
+
   COMBO(lbrc_combo, DE_LBRC),
   COMBO(lprn_combo, LSFT(DE_8)),
   COMBO(esc_combo, KC_ESC),
