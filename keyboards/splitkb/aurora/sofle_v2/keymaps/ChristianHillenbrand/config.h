@@ -3,8 +3,6 @@
 
 #pragma once
 
-#define CAPS_WORD_IDLE_TIMEOUT 0
-
 #define COMBO_TERM 25
 
 #define ENABLE_RGB_MATRIX_ALPHAS_MODS
