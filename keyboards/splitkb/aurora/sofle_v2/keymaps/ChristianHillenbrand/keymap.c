@@ -18,135 +18,62 @@ void keyboard_pre_init_user(void) {
   writePinHigh(24);
 }
 
-/*************
- * TAP HOLDS *
- *************/ 
+/*******************
+ * CUSTOM KEYCODES *
+ *******************/ 
 
 enum custom_keycodes {
-  KC_DCLK = SAFE_RANGE,
-  KC_DRAG,
+  MC_DCLK = SAFE_RANGE,
+  MC_DRAG,
 
-  US_A_AE,
-  US_O_OE,
-  US_U_UE,
-  US_S_SS,
-  US_E_EURO,
+  MC_A_AE,
+  MC_O_OE,
+  MC_U_UE,
+  MC_S_SS,
+  MC_E_EURO,
 
   LT_NAV_SFT_ ,
   LT_FUN_SFT_,
 };
 
+#define KC_LCLK KC_BTN1
+#define KC_RCLK KC_BNT2
+
 #define LT_NAV_SFT LT(0, LT_NAV_SFT_)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
 #define LT_FUN_SFT LT(0, LT_FUN_SFT_)
 
+bool is_mod_active(uint8_t mods, uint8_t mask)
+{
+  return (mods & mask) != 0;
+}
+
+bool is_mod_inactive(uint8_t mods, uint8_t mask)
+{
+  return (mods & mask) == 0;
+}
+
 bool is_shift_active(void)
 {
   uint8_t mods = get_mods() | get_oneshot_mods() | get_weak_mods();
-  return (mods & MOD_MASK_SHIFT) != 0;
+  return is_mod_active(mods, MOD_MASK_SHIFT);
 }
 
 bool is_only_shift_active(void)
 {
-  uint8_t mods = get_mods() | get_oneshot_mods();
-  return (mods & ~MOD_MASK_SHIFT) == 0;
-}
-
-bool revive_dead_key(uint16_t keycode, keyrecord_t* record)
-{
-  if (record->event.pressed) {
-    tap_code16(keycode);
-    tap_code16(KC_SPC);
-  }
-  return false;
-}
-
-bool lt_mod(uint16_t layer, uint8_t mod, keyrecord_t* record)
-{
-  if (record->event.pressed) {
-    if (record->tap.count) {
-      if (get_oneshot_mods() & mod) {
-        del_oneshot_mods(mod);
-      } else {
-        add_oneshot_mods(mod);
-      }
-    } else if (get_oneshot_mods() & mod){
-      del_oneshot_mods(mod);
-      register_mods(mod);
-    } else {
-      layer_on(layer);
-    }
-  } else if (!record->tap.count) {
-    if (layer_state_is(layer)) {
-      layer_off(layer);
-    } else {
-      unregister_mods(mod);
-    }
-  }
-  return false;
-}
-
-bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-  static bool is_drag_active = false;
-
-  switch (keycode) {
-    case KC_DCLK:
-      if (record->event.pressed) {
-        tap_code16(KC_BTN1);
-        wait_ms(50);
-        tap_code16(KC_BTN1);
-      }
-      return false;
-
-    case KC_DRAG:
-      if (record->event.pressed) {
-        if (is_drag_active) {
-          unregister_code16(KC_BTN1);
-          is_drag_active = false;
-        } else {
-          register_code16(KC_BTN1);
-          is_drag_active = true;
-        }
-      }
-      return false;
-
-    case KC_ESC:
-      if (!is_shift_active()) {
-        return true;
-      }
-      return revive_dead_key(US_DGRV, record);
-
-    case US_6:
-      if (!is_shift_active()) {
-        return true;
-      }
-      return revive_dead_key(US_DCIR, record);
-
-    case US_ACUT:
-      if (is_shift_active()){
-        return revive_dead_key(US_DIAE, record);
-      } else {
-        return revive_dead_key(US_ACUT, record);         
-      }
-
-    case LT_NAV_SFT:
-      return lt_mod(L_NAV, MOD_MASK_SHIFT, record);
-
-    case LT_FUN_SFT:
-      return lt_mod(L_FUN, MOD_MASK_SHIFT, record);
-    
-    default: 
-      return true;
-  }
+  uint8_t mods = get_mods() | get_oneshot_mods() | get_weak_mods();
+  return is_mod_inactive(mods, ~MOD_MASK_SHIFT);
 }
 
 uint16_t fast_tap_hold_keycode = 0;
 uint16_t fast_tap_hold_timer = 0;
 bool fast_tap_hold_pressed = false;
 
-void fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool apply_shift, keyrecord_t* record)
+bool fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool apply_shift, keyrecord_t* record)
 {
   if (record->event.pressed) {
+    // get shift state before tapping to not loose oneshots
+    process_caps_word(tap_keycode, record);
     bool shift_active = is_shift_active();
     tap_code16(tap_keycode);
 
@@ -163,34 +90,117 @@ void fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool apply_shift
   } else {
     fast_tap_hold_pressed = false;
   }
+
+  return false;
 }
 
-void post_process_record_user(uint16_t keycode, keyrecord_t* record) {
+bool layer_shift(uint16_t layer, keyrecord_t* record)
+{
+  if (record->event.pressed) {
+    if (record->tap.count) {
+      if (is_mod_active(get_oneshot_mods(), MOD_MASK_SHIFT)) {
+        del_oneshot_mods(MOD_MASK_SHIFT);
+      } else {
+        add_oneshot_mods(MOD_MASK_SHIFT);
+      }
+    } else if (is_mod_active(get_oneshot_mods(), MOD_MASK_SHIFT)) {
+      del_oneshot_mods(MOD_MASK_SHIFT);
+      register_mods(MOD_MASK_SHIFT);
+    } else {
+      layer_on(layer);
+    }
+  } else if (!record->tap.count) {
+    if (layer_state_is(layer)) {
+      layer_off(layer);
+    } else {
+      unregister_mods(MOD_MASK_SHIFT);
+    }
+  }
+
+  return false;
+}
+
+bool revive_dead_key(uint16_t keycode, keyrecord_t* record)
+{
+  if (is_shift_active()) {
+    keycode = S(keycode);
+  }
+
   switch (keycode) {
-    case US_A_AE:
-      fast_tap_hold(US_A, US_ADIA, true, record); 
-      break;
-
-    case US_O_OE:
-      fast_tap_hold(US_O, US_ODIA, true, record); 
-      break;
-
-    case US_U_UE:
-      fast_tap_hold(US_U, US_UDIA, true, record); 
-      break;
-
-    case US_S_SS:
-      fast_tap_hold(US_S, US_SS, false, record);
-      break;
-
-    case US_E_EURO:
-      fast_tap_hold(US_E, US_EURO, false, record); 
-      break;
+    case US_DGRV:
+    case US_ACUT:
+    case US_DTIL:
+    case US_DCIR:
+    case US_DIAE:
+      if (record->event.pressed) {
+        process_caps_word(keycode, record);
+        tap_code16(keycode);
+        tap_code16(KC_SPC);
+        return false;
+      }
+      return true;
 
     default:
+      return true;
+  }
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t* record) {
+  static bool is_drag_active = false;
+
+  switch (keycode) {
+    case KC_LCLK:
+      is_drag_active = false;
+      return true;
+
+    case MC_DCLK:
+      if (record->event.pressed) {
+        tap_code16(KC_LCLK);
+        wait_ms(50);
+        tap_code16(KC_LCLK);
+        is_drag_active = false;
+      }
+      return false;
+
+    case MC_DRAG:
+      if (record->event.pressed) {
+        if (is_drag_active) {
+          unregister_code16(KC_LCLK);
+          is_drag_active = false;
+        } else {
+          register_code16(KC_LCLK);
+          is_drag_active = true;
+        }
+      }
+      return false;
+
+    case MC_A_AE:
+      return fast_tap_hold(US_A, US_ADIA, true, record);
+
+    case MC_O_OE:
+      return fast_tap_hold(US_O, US_ODIA, true, record);
+
+    case MC_U_UE:
+      return fast_tap_hold(US_U, US_UDIA, true, record);
+
+    case MC_S_SS:
+      return fast_tap_hold(US_S, US_SS, false, record);
+
+    case MC_E_EURO:
+      return fast_tap_hold(US_E, US_EURO, false, record); 
+
+    case LT_NAV_SFT:
+      return layer_shift(L_NAV, record);
+
+    case LT_FUN_SFT:
+      return layer_shift(L_FUN, record);
+    
+    default: 
       fast_tap_hold_pressed = false;
       break;
   }
+
+  return revive_dead_key(keycode, record);
 }
 
 void matrix_scan_user(void) {
@@ -281,11 +291,11 @@ tap_dance_action_t tap_dance_actions[] = {
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
     case US_A ... US_Z:
-    case US_A_AE:
-    case US_O_OE:
-    case US_U_UE:
-    case US_S_SS:
-    case US_E_EURO:
+    case MC_A_AE:
+    case MC_O_OE:
+    case MC_U_UE:
+    case MC_S_SS:
+    case MC_E_EURO:
     case US_MINS:
       add_weak_mods(MOD_BIT(KC_LSFT));
       return true;
@@ -329,11 +339,11 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
-const uint16_t PROGMEM lprn_combo[] = {US_S_SS, US_D, COMBO_END};
+const uint16_t PROGMEM lprn_combo[] = {MC_S_SS, US_D, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {US_D, US_F, COMBO_END};
 
-const uint16_t PROGMEM mins_combo[] = {US_U_UE, US_I, COMBO_END};
-const uint16_t PROGMEM eql_combo[]  = {US_I, US_O_OE, COMBO_END};
+const uint16_t PROGMEM mins_combo[] = {MC_U_UE, US_I, COMBO_END};
+const uint16_t PROGMEM eql_combo[]  = {US_I, MC_O_OE, COMBO_END};
 const uint16_t PROGMEM lbrc_combo[] = {US_J, US_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {US_K, US_L, COMBO_END};
 
@@ -358,9 +368,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          KC_ESC,          US_1,            US_2,            US_3,            US_4,            US_5,                                                 US_6,            US_7,            US_8,            US_9,            US_0,            KC_BSPC,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         KC_TAB,          US_Q,            US_W,            US_E_EURO,       US_R,            US_T,                                                 US_Z,            US_U_UE,         US_I,            US_O_OE,         US_P,            KC_DEL,
+         KC_TAB,          US_Q,            US_W,            MC_E_EURO,       US_R,            US_T,                                                 US_Z,            MC_U_UE,         US_I,            MC_O_OE,         US_P,            KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         CW_TOGG,         US_A_AE,         US_S_SS,         US_D,            US_F,            US_G,                                                 US_H,            US_J,            US_K,            US_L,            US_SCLN,         US_ACUT,
+         CW_TOGG,         MC_A_AE,         MC_S_SS,         US_D,            US_F,            US_G,                                                 US_H,            US_J,            US_K,            US_L,            US_SCLN,         US_ACUT,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          XXXXXXX,         US_Y,            US_X,            US_C,            US_V,            US_B,            XXXXXXX,            KC_MUTE,         US_N,            US_M,            US_COMM,         US_DOT,          US_SLSH,         US_BSLS,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
