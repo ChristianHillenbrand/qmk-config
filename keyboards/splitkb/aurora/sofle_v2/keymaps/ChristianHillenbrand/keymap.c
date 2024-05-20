@@ -18,6 +18,37 @@ void keyboard_pre_init_user(void) {
   writePinHigh(24);
 }
 
+/*************
+ * CAPS WORD *
+ *************/
+
+bool caps_word_press_user(uint16_t keycode) {
+  switch (keycode) {
+    case US_A ... US_Z:
+    case US_MINS:
+      add_weak_mods(MOD_BIT(KC_LSFT));
+      return true;
+
+    case CW_TOGG:
+    case US_1 ... US_0:
+    case US_UNDS:
+    case KC_BSPC:
+    case KC_DEL:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+void caps_word_set_user(bool active) {
+  if (active) {
+    writePinLow(24);
+  } else {
+    writePinHigh(24);
+  }
+}
+
 /*******************
  * CUSTOM KEYCODES *
  *******************/ 
@@ -114,31 +145,6 @@ bool layer_shift(uint16_t layer, keyrecord_t* record)
   return false;
 }
 
-bool revive_dead_key(uint16_t keycode, keyrecord_t* record)
-{
-  if (is_shift_active()) {
-    keycode = S(keycode);
-  }
-
-  switch (keycode) {
-    case US_DGRV:
-    case US_ACUT:
-    case US_DTIL:
-    case US_DCIR:
-    case US_DIAE:
-      if (record->event.pressed) {
-        process_caps_word(keycode, record);
-        tap_code16(keycode);
-        tap_code16(KC_SPC);
-        return false;
-      }
-      return true;
-
-    default:
-      return true;
-  }
-}
-
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_drag_active = false;
 
@@ -194,7 +200,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       break;
   }
 
-  return revive_dead_key(keycode, record);
+  return true;
 }
 
 void matrix_scan_user(void) {
@@ -232,27 +238,6 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
  * TAP DANCES *
  **************/
 
-typedef enum {
-  UNKNOWN = 0,
-  SINGLE_TAP,
-  SINGLE_HOLD,
-  DOUBLE_TAP
-} td_state_t;
-
-int cur_dance (tap_dance_state_t *state) {
-  if (state->count == 1) {
-    if (!state->pressed) { 
-      return SINGLE_TAP; 
-    } else { 
-      return SINGLE_HOLD; 
-    }
-  } else if (state->count == 2) { 
-    return DOUBLE_TAP;
-  } else {
-    return UNKNOWN;
-  }
-}
-
 void td_fn_boot(tap_dance_state_t *state, void *user_data) {
   if (state->count == 2) {
     reset_keyboard();
@@ -278,49 +263,20 @@ tap_dance_action_t tap_dance_actions[] = {
 #define TD_BOOT TD(TD_BOOT_)
 #define TD_RESET TD(TD_RESET_)
 
-/*************
- * CAPS WORD *
- *************/
-
-bool caps_word_press_user(uint16_t keycode) {
-  switch (keycode) {
-    case US_A ... US_Z:
-    case US_MINS:
-      add_weak_mods(MOD_BIT(KC_LSFT));
-      return true;
-
-    case CW_TOGG:
-    case US_1 ... US_0:
-    case US_UNDS:
-    case KC_BSPC:
-    case KC_DEL:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
-void caps_word_set_user(bool active) {
-  if (active) {
-    writePinLow(24);
-  } else {
-    writePinHigh(24);
-  }
-}
-
 /*****************
  * KEY OVERRIDES *
  *****************/
 
 const key_override_t shift_spc = ko_make_basic(MOD_MASK_SHIFT, KC_SPC, KC_TAB);
 const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
+const key_override_t shift_ent = ko_make_basic(MOD_MASK_SHIFT, KC_ENT, KC_ESC);
 const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, US_LPRN, US_LABK);
 const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, US_RPRN, US_RABK);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
   &shift_spc,
   &shift_bspc,
+  &shift_ent,
   &shift_lprn,
   &shift_rprn,  
   NULL
@@ -361,13 +317,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [L_BASE] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         KC_ESC,          US_1,            US_2,            US_3,            US_4,            US_5,                                                 US_6,            US_7,            US_8,            US_9,            US_0,            KC_BSPC,
+         QK_GESC,         US_1,            US_2,            US_3,            US_4,            US_5,                                                 US_6,            US_7,            US_8,            US_9,            US_0,            KC_BSPC,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
          KC_TAB,          US_Q,            US_W,            MC_E_EURO,       US_R,            US_T,                                                 US_Z,            MC_U_UE,         US_I,            MC_O_OE,         US_P,            KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          CW_TOGG,         MC_A_AE,         MC_S_SS,         US_D,            US_F,            US_G,                                                 US_H,            US_J,            US_K,            US_L,            US_SCLN,         US_ACUT,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         SFT_T(KC_BSPC),  US_Y,            US_X,            US_C,            US_V,            US_B,            XXXXXXX,            KC_MUTE,         US_N,            US_M,            US_COMM,         US_DOT,          US_SLSH,         KC_RSFT,
+         SFT_T(KC_BSLS),  US_Y,            US_X,            US_C,            US_V,            US_B,            XXXXXXX,            KC_MUTE,         US_N,            US_M,            US_COMM,         US_DOT,          US_SLSH,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -482,7 +438,7 @@ extern void render_mod_status_gui_alt(uint8_t);
 extern void render_mod_status_ctrl_shift(uint8_t);
 
 void render_layer_state_user(void) {
-  oled_write_ln_P(PSTR("LAYER"), fal se);
+  oled_write_ln_P(PSTR("LAYER"), false);
   switch (get_highest_layer(layer_state)) {
     case L_BASE:
       oled_write_P(PSTR("BASE\n"), false);
