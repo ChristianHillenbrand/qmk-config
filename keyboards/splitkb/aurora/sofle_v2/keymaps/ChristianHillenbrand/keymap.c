@@ -467,3 +467,53 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
   return false;
 }
+
+/********
+ * OLED *
+ ********/
+
+extern void render_logo(void);
+extern void render_logo_text(void);
+extern void render_space(void);
+extern void render_mod_status_gui_alt(uint8_t);
+extern void render_mod_status_ctrl_shift(uint8_t);
+
+void render_layer_state_user(void) {
+  oled_write_ln_P(PSTR("LAYER"), false);
+  switch (get_highest_layer(layer_state)) {
+    case L_BASE:
+      oled_write_P(PSTR("BASE\n"), false);
+      break;
+
+    case L_NAV:
+      oled_write_P(PSTR("NAV\n"), false);
+      break;
+
+    case L_NUM:
+      oled_write_P(PSTR("NUM\n"), false);
+      break;
+
+    case L_FUN:
+      oled_write_P(PSTR("FUN\n"), false);
+      break;
+
+    default:
+      oled_write_P(PSTR("?????\n"), false);
+  }
+}
+
+bool oled_task_user(void) {
+   if (is_keyboard_master()) {
+    render_logo();
+    render_logo_text();
+    render_space();
+    render_space();
+    render_layer_state_user();
+    render_space();
+    render_space();
+    render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
+    render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
+    return false;
+  }
+  return true;
+}
