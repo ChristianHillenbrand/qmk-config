@@ -348,11 +348,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         KC_MPLY,         KC_MSTP,         KC_MPRV,         KC_MNXT,         KC_MUTE,                                              _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         _______,         US_7,            US_8,            US_9,            _______,                                              _______,         _______,         _______,         TD_RESET,        TD_BOOT,         _______, 
+         _______,         US_LBRC,         US_7,            US_8,            US_9,            US_RBRC,                                               _______,         _______,         _______,         TD_RESET,        TD_BOOT,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         _______,         US_4,            US_5,            US_6,            _______,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______, 
+         _______,         US_MINS,         US_4,            US_5,            US_6,            US_EQL,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         _______,         US_1,            US_2,            US_3,            _______,         _______,            _______,         _______,         _______,         _______,         _______,         _______,         _______, 
+         _______,         US_LPRN,         US_1,            US_2,            US_3,            US_RPRN,         _______,            _______,         _______,         _______,         _______,         _______,         _______,         _______, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            _______,         _______,         US_COMM,         US_DOT,          US_0,               _______,         _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -459,8 +459,39 @@ void render_layer_state_user(void) {
   }
 }
 
+void render_rgb_state(void) {
+  oled_write_ln_P(PSTR("RGB"), rgb_matrix_is_enabled());
+  render_space();
+
+  uint8_t mode = rgb_matrix_get_mode();
+  char mode_str[4];
+  sprintf(mode_str, "%3d", mode);
+
+  oled_write_P(PSTR("M:"), false);
+  oled_write_P(PSTR(mode_str), false);
+  render_space();
+
+  HSV hsv = rgb_matrix_get_hsv();
+
+  char hue_str[4];
+  char sat_str[4];
+  char val_str[4];
+
+  sprintf(hue_str, "%3d", hsv.h);
+  sprintf(sat_str, "%3d", hsv.s);
+  sprintf(val_str, "%3d", hsv.v);
+
+  oled_write_P(PSTR("H:"), false);
+  oled_write_P(PSTR(hue_str), false);
+  oled_write_P(PSTR("S:"), false);
+  oled_write_P(PSTR(sat_str), false);
+  oled_write_P(PSTR("V:"), false);
+  oled_write_P(PSTR(val_str), false);
+  render_space();
+}
+
 bool oled_task_user(void) {
-   if (is_keyboard_master()) {
+  if (is_keyboard_master()) {
     render_logo();
     render_logo_text();
     render_space();
@@ -468,9 +499,15 @@ bool oled_task_user(void) {
     render_layer_state_user();
     render_space();
     render_space();
-    render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
-    render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
-    return false;
+    render_mod_status_gui_alt(get_mods() | get_oneshot_mods());
+    render_mod_status_ctrl_shift(get_mods() | get_oneshot_mods());
   }
-  return true;
+  else {
+    render_logo();
+    render_logo_text();
+    render_space();
+    render_rgb_state();
+  }
+
+  return false;
 }
