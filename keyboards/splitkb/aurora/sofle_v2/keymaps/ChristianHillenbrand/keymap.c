@@ -506,6 +506,7 @@ bool oled_task_user(void) {
     render_logo();
     render_logo_text();
     render_space();
+    render_space();
     render_rgb_state();
   }
 
