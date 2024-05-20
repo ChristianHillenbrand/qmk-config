@@ -109,7 +109,7 @@ bool fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool keep_shift,
     tap_code16(tap_keycode);
 
     if (is_only_shift_active()) {
-      if (keep_shift && shift_active) {
+      if (shift_active && keep_shift) {
         fast_tap_hold_keycode = S(hold_keycode);
       } else {
         fast_tap_hold_keycode = hold_keycode;
@@ -268,15 +268,17 @@ tap_dance_action_t tap_dance_actions[] = {
  *****************/
 
 const key_override_t shift_spc = ko_make_basic(MOD_MASK_SHIFT, KC_SPC, KC_TAB);
-const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
+const key_override_t shift_esc = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, US_DTIL);
 const key_override_t shift_ent = ko_make_basic(MOD_MASK_SHIFT, KC_ENT, KC_ESC);
+const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
 const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, US_LPRN, US_LABK);
 const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, US_RPRN, US_RABK);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
   &shift_spc,
-  &shift_bspc,
+  &shift_esc,
   &shift_ent,
+  &shift_bspc,
   &shift_lprn,
   &shift_rprn,  
   NULL
@@ -285,8 +287,6 @@ const key_override_t **key_overrides = (const key_override_t *[]){
 /**********
  * COMBOS *
  **********/
-
-const uint16_t PROGMEM capsword_combo[] = {LT_NAV_SFT, LT_FUN_SFT, COMBO_END};
 
 const uint16_t PROGMEM lprn_combo[] = {MC_S_SS, US_D, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {US_D, US_F, COMBO_END};
@@ -297,8 +297,6 @@ const uint16_t PROGMEM lbrc_combo[] = {US_J, US_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {US_K, US_L, COMBO_END};
 
 combo_t key_combos[] = {
-  COMBO(capsword_combo, CW_TOGG),
-
   COMBO(lprn_combo, US_LPRN),
   COMBO(rprn_combo, US_RPRN),
 
@@ -317,7 +315,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [L_BASE] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         QK_GESC,         US_1,            US_2,            US_3,            US_4,            US_5,                                                 US_6,            US_7,            US_8,            US_9,            US_0,            KC_BSPC,
+         KC_ESC,          US_1,            US_2,            US_3,            US_4,            US_5,                                                 US_6,            US_7,            US_8,            US_9,            US_0,            KC_BSPC,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
          KC_TAB,          US_Q,            US_W,            MC_E_EURO,       US_R,            US_T,                                                 US_Z,            MC_U_UE,         US_I,            MC_O_OE,         US_P,            KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
