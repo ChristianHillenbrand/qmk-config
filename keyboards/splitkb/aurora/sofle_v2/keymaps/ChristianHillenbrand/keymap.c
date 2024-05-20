@@ -98,11 +98,8 @@ bool layer_shift(uint16_t layer, keyrecord_t* record)
 {
   if (record->event.pressed) {
     if (record->tap.count) {
-      if (is_caps_word_on()) {
-        caps_word_off();
-      } else if (is_mod_active(get_oneshot_mods(), MOD_MASK_SHIFT)) {
+      if (is_mod_active(get_oneshot_mods(), MOD_MASK_SHIFT)) {
         del_oneshot_mods(MOD_MASK_SHIFT);
-        caps_word_on();
       } else {
         add_oneshot_mods(MOD_MASK_SHIFT);
       }
@@ -316,11 +313,13 @@ void caps_word_set_user(bool active) {
  * KEY OVERRIDES *
  *****************/
 
+const key_override_t shift_spc = ko_make_basic(MOD_MASK_SHIFT, KC_SPC, KC_TAB);
 const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
 const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, US_LPRN, US_LABK);
 const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, US_RPRN, US_RABK);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
+  &shift_spc,
   &shift_bspc,
   &shift_lprn,
   &shift_rprn,  
@@ -331,6 +330,8 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
+const uint16_t PROGMEM capsword_combo[] = {LT_NAV_SFT, LT_FUN_SFT, COMBO_END};
+
 const uint16_t PROGMEM lprn_combo[] = {MC_S_SS, US_D, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {US_D, US_F, COMBO_END};
 
@@ -340,6 +341,8 @@ const uint16_t PROGMEM lbrc_combo[] = {US_J, US_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {US_K, US_L, COMBO_END};
 
 combo_t key_combos[] = {
+  COMBO(capsword_combo, CW_TOGG),
+
   COMBO(lprn_combo, US_LPRN),
   COMBO(rprn_combo, US_RPRN),
 
@@ -364,9 +367,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          CW_TOGG,         MC_A_AE,         MC_S_SS,         US_D,            US_F,            US_G,                                                 US_H,            US_J,            US_K,            US_L,            US_SCLN,         US_ACUT,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         XXXXXXX,         US_Y,            US_X,            US_C,            US_V,            US_B,            XXXXXXX,            KC_MUTE,         US_N,            US_M,            US_COMM,         US_DOT,          US_SLSH,         US_BSLS,
+         SFT_T(KC_BSPC),  US_Y,            US_X,            US_C,            US_V,            US_B,            XXXXXXX,            KC_MUTE,         US_N,            US_M,            US_COMM,         US_DOT,          US_SLSH,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_DOWN,         KC_UP,           KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LEFT,         KC_RGHT
+                                           KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
@@ -479,7 +482,7 @@ extern void render_mod_status_gui_alt(uint8_t);
 extern void render_mod_status_ctrl_shift(uint8_t);
 
 void render_layer_state_user(void) {
-  oled_write_ln_P(PSTR("LAYER"), false);
+  oled_write_ln_P(PSTR("LAYER"), fal se);
   switch (get_highest_layer(layer_state)) {
     case L_BASE:
       oled_write_P(PSTR("BASE\n"), false);
