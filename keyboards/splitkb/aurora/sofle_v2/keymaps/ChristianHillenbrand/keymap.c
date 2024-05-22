@@ -96,9 +96,9 @@ bool is_only_shift_active(void)
   return is_mod_inactive(mods, ~MOD_MASK_SHIFT);
 }
 
-uint16_t fast_tap_hold_keycode = 0;
-uint16_t fast_tap_hold_timer = 0;
-bool fast_tap_hold_pressed = false;
+static uint16_t fast_tap_hold_keycode = 0;
+static uint16_t fast_tap_hold_timer = 0;
+static bool fast_tap_hold_pressed = false;
 
 bool fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool keep_shift, keyrecord_t* record)
 {
@@ -195,8 +195,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     case LT_FUN_SFT:
       return layer_shift(L_FUN, record);
     
-    default: 
-      fast_tap_hold_pressed = false;
+    default:
+      if (record->event.pressed) {
+        fast_tap_hold_pressed = false;
+      }
       break;
   }
 
@@ -459,27 +461,48 @@ void render_layer_state_user(void) {
   }
 }
 
-void render_rgb_state(void) {
-  oled_write_ln_P(PSTR("RGB"), rgb_matrix_is_enabled());
+struct rgb_data_t {
+  bool enabled;
+  uint8_t mode;
+  HSV hsv;
+};
+
+struct rgb_data_t read_rgb_data(void) {
+  struct rgb_data_t rgb_data = {
+    rgb_matrix_is_enabled(),
+    rgb_matrix_get_mode(),
+    rgb_matrix_get_hsv()
+  };
+  return rgb_data;
+}
+
+bool compare_rgb_data(struct rgb_data_t a, struct rgb_data_t b) {
+  return 
+    a.enabled == b.enabled &&
+    a.mode    == b.mode    && 
+    a.hsv.h   == b.hsv.h   &&
+    a.hsv.s   == b.hsv.s   &&
+    a.hsv.v   == b.hsv.v;
+}
+
+void render_rgb_data(struct rgb_data_t rgb_data) {
+  oled_write_ln_P(PSTR("RGB"), rgb_data.enabled);
   render_space();
 
-  uint8_t mode = rgb_matrix_get_mode();
   char mode_str[4];
-  sprintf(mode_str, "%3d", mode);
+  sprintf(mode_str, "%3d", rgb_data.mode);
 
   oled_write_P(PSTR("M:"), false);
   oled_write_P(PSTR(mode_str), false);
   render_space();
 
-  HSV hsv = rgb_matrix_get_hsv();
-
   char hue_str[4];
   char sat_str[4];
   char val_str[4];
 
-  sprintf(hue_str, "%3d", hsv.h);
-  sprintf(sat_str, "%3d", hsv.s);
-  sprintf(val_str, "%3d", hsv.v);
+  sprintf(hue_str, "%3d", rgb_data.hsv.h);
+  sprintf(sat_str, "%3d", rgb_data.hsv.s);
+  sprintf(val_str, "%3d", rgb_data.hsv.v);
 
   oled_write_P(PSTR("H:"), false);
   oled_write_P(PSTR(hue_str), false);
@@ -503,11 +526,25 @@ bool oled_task_user(void) {
     render_mod_status_ctrl_shift(get_mods() | get_oneshot_mods());
   }
   else {
+    static struct rgb_data_t cur_rgb_data = {};
+    static uint32_t rgb_data_timer = 0;
+
+    struct rgb_data_t new_rgb_data = read_rgb_data();
+    if (!compare_rgb_data(cur_rgb_data, new_rgb_data)) {
+      rgb_data_timer = timer_read32() + 10000;
+      cur_rgb_data = new_rgb_data;
+      oled_clear();
+    }
+
+    if (timer_expired32(timer_read32(), rgb_data_timer)) {
+      return true;
+    }
+    
     render_logo();
     render_logo_text();
     render_space();
     render_space();
-    render_rgb_state();
+    render_rgb_data(cur_rgb_data);
   }
 
   return false;
