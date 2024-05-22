@@ -96,7 +96,8 @@ bool is_only_shift_active(void)
   return is_mod_inactive(mods, ~MOD_MASK_SHIFT);
 }
 
-static uint16_t fast_tap_hold_keycode = 0;
+static uint16_t fast_tap_keycode = 0;
+static uint16_t fast_hold_keycode = 0;
 static uint16_t fast_tap_hold_timer = 0;
 static bool fast_tap_hold_pressed = false;
 
@@ -106,19 +107,21 @@ bool fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool keep_shift,
     // get shift state before tapping to not loose oneshots
     process_caps_word(tap_keycode, record);
     bool shift_active = is_shift_active();
+
     tap_code16(tap_keycode);
+    fast_tap_keycode = tap_keycode;
 
     if (is_only_shift_active()) {
       if (shift_active && keep_shift) {
-        fast_tap_hold_keycode = S(hold_keycode);
+        fast_hold_keycode = S(hold_keycode);
       } else {
-        fast_tap_hold_keycode = hold_keycode;
+        fast_hold_keycode = hold_keycode;
       }
 
       fast_tap_hold_timer = record->event.time + TAPPING_TERM;
       fast_tap_hold_pressed = true;
     }
-  } else {
+  } else if (tap_keycode == fast_tap_keycode) {
     fast_tap_hold_pressed = false;
   }
 
@@ -213,7 +216,7 @@ void matrix_scan_user(void) {
     unregister_mods(mods);
 
     tap_code16(KC_BSPC);
-    tap_code16(fast_tap_hold_keycode);
+    tap_code16(fast_hold_keycode);
     fast_tap_hold_pressed = false;
 
     register_mods(mods);
@@ -269,18 +272,12 @@ tap_dance_action_t tap_dance_actions[] = {
  * KEY OVERRIDES *
  *****************/
 
-const key_override_t shift_spc = ko_make_basic(MOD_MASK_SHIFT, KC_SPC, KC_TAB);
-const key_override_t shift_esc = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, US_DTIL);
-const key_override_t shift_ent = ko_make_basic(MOD_MASK_SHIFT, KC_ENT, KC_ESC);
-const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
+const key_override_t shift_esc  = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, US_DTIL);
 const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, US_LPRN, US_LABK);
 const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, US_RPRN, US_RABK);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
-  &shift_spc,
   &shift_esc,
-  &shift_ent,
-  &shift_bspc,
   &shift_lprn,
   &shift_rprn,  
   NULL
