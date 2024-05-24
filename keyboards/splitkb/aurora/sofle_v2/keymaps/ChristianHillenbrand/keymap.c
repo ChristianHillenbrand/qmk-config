@@ -5,7 +5,8 @@
 #include "features/layer_lock.h"
 
 enum layers {
-  L_BASE = 0,
+  L_QWRTY = 0,
+  L_COLMK,
   L_NAV,
   L_NUM,
   L_FUN
@@ -27,6 +28,9 @@ void keyboard_pre_init_user(void) {
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
     case KC_A ... KC_Z:
+    case DE_ADIA:
+    case DE_ODIA:
+    case DE_UDIA:
     case DE_MINS:
       add_weak_mods(MOD_BIT(KC_LSFT));
       return true;
@@ -268,18 +272,38 @@ void td_fn_reset(tap_dance_state_t *state, void *user_date) {
   }
 }
 
+void td_fn_mode(tap_dance_state_t *state, void *user_date) {
+  if (state->count == 2) {
+    switch (get_highest_layer(default_layer_state)) {
+      case L_QWRTY:
+        set_single_persistent_default_layer(L_COLMK);
+        break;
+
+      case L_COLMK:
+        set_single_persistent_default_layer(L_QWRTY);
+        break;
+
+      default:
+        break;
+    }
+  }
+}
+
 enum tap_dances{
   TD_BOOT_ = 0,
-  TD_RESET_
+  TD_RESET_,
+  TD_MODE_
 };
 
 tap_dance_action_t tap_dance_actions[] = { 
   [TD_BOOT_] = ACTION_TAP_DANCE_FN(td_fn_boot),
-  [TD_RESET_] = ACTION_TAP_DANCE_FN(td_fn_reset)
+  [TD_RESET_] = ACTION_TAP_DANCE_FN(td_fn_reset),
+  [TD_MODE_] = ACTION_TAP_DANCE_FN(td_fn_mode),
 };
 
 #define TD_BOOT TD(TD_BOOT_)
 #define TD_RESET TD(TD_RESET_)
+#define TD_MODE TD(TD_MODE_)
 
 /*****************
  * KEY OVERRIDES *
@@ -328,7 +352,7 @@ combo_t key_combos[] = {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-  [L_BASE] = LAYOUT(
+  [L_QWRTY] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          KC_ESC,          DE_1,            DE_2,            DE_3,            DE_4,            DE_5,                                                 DE_6,            DE_7,            DE_8,            DE_9,            DE_0,            KC_BSPC,
@@ -344,11 +368,27 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   ),
   
+  [L_COLMK] = LAYOUT(
+
+    // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
+         KC_ESC,          DE_1,            DE_2,            DE_3,            DE_4,            DE_5,                                                 DE_6,            DE_7,            DE_8,            DE_9,            DE_0,            KC_BSPC,
+    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
+         KC_TAB,          DE_Q,            DE_W,            DE_F,            DE_P,            DE_B,                                                 DE_J,            DE_L,            DE_U_UE,         DE_Y,            DE_PLUS,         KC_DEL,
+    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
+         CW_TOGG,         DE_A_AE,         DE_R,            DE_S_SS,         DE_T,            DE_G,                                                 DE_M,            DE_N,            DE_E,            DE_I,            DE_O_OE,         DE_HASH,
+    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
+         SFT_T(DE_BSLS),  DE_Z,            DE_X,            DE_C,            DE_D,            DE_V,            XXXXXXX,            KC_MUTE,         DE_K,            DE_H,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
+    // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
+                                           KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
+    //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
+
+  ),
+
   [L_NAV] = LAYOUT(
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         _______,         _______,         _______,         _______,         _______,                                              RGB_MOD,         RGB_HUI,         RGB_SAI,         RGB_VAI,         RGB_SPI,         _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         TD_BOOT,         TD_RESET,        _______,         LLOCK,           _______,                                              KC_ESC,          KC_HOME,         KC_UP,           KC_END,          KC_BSPC,         _______, 
+         _______,         TD_BOOT,         TD_RESET,        TD_MODE,         LLOCK,           _______,                                              KC_ESC,          KC_HOME,         KC_UP,           KC_END,          KC_BSPC,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,                                              KC_TAB,          KC_LEFT,         KC_DOWN,         KC_RGHT,         KC_DEL,          _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
@@ -364,7 +404,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         RGB_TOG,         KC_MPLY,         KC_MSTP,         KC_MPRV,         KC_MNXT,                                              _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         DE_CIRC,         DE_7,            DE_8,            DE_9,            DE_QUES,                                              _______,         LLOCK,           _______,         TD_RESET,        TD_BOOT,         _______, 
+         _______,         DE_CIRC,         DE_7,            DE_8,            DE_9,            DE_QUES,                                              _______,         LLOCK,           TD_MODE,         TD_RESET,        TD_BOOT,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         DE_LBRC,         DE_4,            DE_5,            DE_6,            DE_RBRC,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
@@ -373,13 +413,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                            _______,         _______,         DE_COMM,         DE_DOT,          DE_0,               TG(L_NUM),       _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
   ),
-
+ 
   [L_FUN] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         RGB_TOG,         KC_MPLY,         KC_MSTP,         KC_MPRV,         KC_MNXT,                                              _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         KC_F12,          KC_F7,           KC_F8,           KC_F9,           _______,                                              _______,         LLOCK,           _______,         TD_RESET,        TD_BOOT,         _______, 
+         _______,         KC_F12,          KC_F7,           KC_F8,           KC_F9,           _______,                                              _______,         LLOCK,           TD_MODE,         TD_RESET,        TD_BOOT,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         KC_F11,          KC_F4,           KC_F5,           KC_F6,           _______,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
@@ -451,27 +491,52 @@ extern void render_space(void);
 extern void render_mod_status_gui_alt(uint8_t);
 extern void render_mod_status_ctrl_shift(uint8_t);
 
-void render_layer_state_user(void) {
-  oled_write_ln_P(PSTR("LAYER"), false);
-  switch (get_highest_layer(layer_state)) {
-    case L_BASE:
-      oled_write_P(PSTR("BASE\n"), false);
+void render_line(void) {
+  oled_write_P(PSTR("-----"), false);
+}
+
+void render_mode(void) {
+  oled_write_P(PSTR("MODE "), false);
+  render_space();
+  switch (get_highest_layer(default_layer_state)) {
+    case L_QWRTY:
+      oled_write_P(PSTR("QWRTY"), false);
       break;
 
-    case L_NAV:
-      oled_write_P(PSTR("NAV\n"), false);
-      break;
-
-    case L_NUM:
-      oled_write_P(PSTR("NUM\n"), false);
-      break;
-
-    case L_FUN:
-      oled_write_P(PSTR("FUN\n"), false);
+    case L_COLMK:
+      oled_write_P(PSTR("COLMK"), false);
       break;
 
     default:
-      oled_write_P(PSTR("?????\n"), false);
+      oled_write_P(PSTR("?????"), false);
+      break;
+  }
+}
+
+void render_layer(void) {
+  oled_write_P(PSTR("LAYER"), false);
+  render_space();
+  switch (get_highest_layer(layer_state)) {
+    case L_QWRTY:
+    case L_COLMK:
+      oled_write_P(PSTR("BASE "), false);
+      break;
+
+    case L_NAV:
+      oled_write_P(PSTR("NAV  "), false);
+      break;
+
+    case L_NUM:
+      oled_write_P(PSTR("NUM  "), false);
+      break;
+
+    case L_FUN:
+      oled_write_P(PSTR("FUN  "), false);
+      break;
+
+    default:
+      oled_write_P(PSTR("?????"), false);
+      break;
   }
 }
 
@@ -538,12 +603,13 @@ void render_rgb_data(struct rgb_data_t rgb_data) {
 
 bool oled_task_user(void) {
   if (is_keyboard_master()) {
-    render_logo();
-    render_logo_text();
+    render_mode();
     render_space();
+    render_line();
     render_space();
-    render_layer_state_user();
+    render_layer();
     render_space();
+    render_line();
     render_space();
     render_mod_status_gui_alt(get_mods() | get_oneshot_mods());
     render_mod_status_ctrl_shift(get_mods() | get_oneshot_mods());
