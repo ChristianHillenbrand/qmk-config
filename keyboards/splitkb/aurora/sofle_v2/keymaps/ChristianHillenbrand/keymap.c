@@ -1,6 +1,6 @@
 #include QMK_KEYBOARD_H
 
-#include "keymap_us_international.h"
+#include "keymap_german.h"
 
 enum layers {
   L_BASE = 0,
@@ -24,14 +24,14 @@ void keyboard_pre_init_user(void) {
 
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
-    case US_A ... US_Z:
-    case US_MINS:
+    case KC_A ... KC_Z:
+    case DE_MINS:
       add_weak_mods(MOD_BIT(KC_LSFT));
       return true;
 
     case CW_TOGG:
-    case US_1 ... US_0:
-    case US_UNDS:
+    case DE_1 ... DE_0:
+    case DE_UNDS:
     case KC_BSPC:
     case KC_DEL:
       return true;
@@ -54,14 +54,14 @@ void caps_word_set_user(bool active) {
  *******************/ 
 
 enum custom_keycodes {
-  MC_DCLK = SAFE_RANGE,
-  MC_DRAG,
+  KC_DCLK = SAFE_RANGE,
+  KC_DRAG,
 
-  MC_A_AE,
-  MC_O_OE,
-  MC_U_UE,
-  MC_S_SS,
-  MC_E_EURO,
+  DE_A_AE,
+  DE_O_OE,
+  DE_U_UE,
+  DE_S_SS,
+  DE_E_EURO,
 
   LT_NAV_SFT_ ,
   LT_FUN_SFT_,
@@ -156,7 +156,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       is_drag_active = false;
       return true;
 
-    case MC_DCLK:
+    case KC_DCLK:
       if (record->event.pressed) {
         tap_code16(KC_LCLK);
         wait_ms(50);
@@ -165,7 +165,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       }
       return false;
 
-    case MC_DRAG:
+    case KC_DRAG:
       if (record->event.pressed) {
         if (is_drag_active) {
           unregister_code16(KC_LCLK);
@@ -177,20 +177,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       }
       return false;
 
-    case MC_A_AE:
-      return fast_tap_hold(US_A, US_ADIA, true, record);
+    case DE_A_AE:
+      return fast_tap_hold(DE_TILD, DE_ADIA, true, record);
 
-    case MC_O_OE:
-      return fast_tap_hold(US_O, US_ODIA, true, record);
+    case DE_O_OE:
+      return fast_tap_hold(DE_O, DE_ODIA, true, record);
 
-    case MC_U_UE:
-      return fast_tap_hold(US_U, US_UDIA, true, record);
+    case DE_U_UE:
+      return fast_tap_hold(DE_U, DE_UDIA, true, record);
 
-    case MC_S_SS:
-      return fast_tap_hold(US_S, US_SS, false, record);
+    case DE_S_SS:
+      return fast_tap_hold(DE_S, DE_SS, false, record);
 
-    case MC_E_EURO:
-      return fast_tap_hold(US_E, US_EURO, false, record); 
+    case DE_E_EURO:
+      return fast_tap_hold(DE_E, DE_EURO, false, record); 
 
     case LT_NAV_SFT:
       return layer_shift(L_NAV, record);
@@ -272,14 +272,22 @@ tap_dance_action_t tap_dance_actions[] = {
  * KEY OVERRIDES *
  *****************/
 
-const key_override_t shift_esc  = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, US_DTIL);
-const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, US_LPRN, US_LABK);
-const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, US_RPRN, US_RABK);
+const key_override_t shift_esc  = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, DE_TILD);
+const key_override_t shift_bspc  = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
+const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, DE_LPRN, DE_LABK);
+const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, DE_RPRN, DE_RABK);
+const key_override_t shift_lbrc = ko_make_basic(MOD_MASK_SHIFT, DE_LBRC, DE_LCBR);
+const key_override_t shift_rbrc = ko_make_basic(MOD_MASK_SHIFT, DE_RBRC, DE_RCBR);
+const key_override_t shift_bsls = ko_make_basic(MOD_MASK_SHIFT, DE_BSLS, DE_PIPE);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
   &shift_esc,
+  &shift_bspc,
   &shift_lprn,
-  &shift_rprn,  
+  &shift_rprn,
+  &shift_lbrc,
+  &shift_rbrc,
+  &shift_bsls,
   NULL
 };
 
@@ -287,22 +295,16 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
-const uint16_t PROGMEM lprn_combo[] = {MC_S_SS, US_D, COMBO_END};
-const uint16_t PROGMEM rprn_combo[] = {US_D, US_F, COMBO_END};
-
-const uint16_t PROGMEM mins_combo[] = {MC_U_UE, US_I, COMBO_END};
-const uint16_t PROGMEM eql_combo[]  = {US_I, MC_O_OE, COMBO_END};
-const uint16_t PROGMEM lbrc_combo[] = {US_J, US_K, COMBO_END};
-const uint16_t PROGMEM rbrc_combo[] = {US_K, US_L, COMBO_END};
+const uint16_t PROGMEM lbrc_combo[] = {DE_S_SS, DE_D, COMBO_END};
+const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
+const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
+const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
 
 combo_t key_combos[] = {
-  COMBO(lprn_combo, US_LPRN),
-  COMBO(rprn_combo, US_RPRN),
-
-  COMBO(mins_combo, US_MINS),
-  COMBO(eql_combo, US_EQL),
-  COMBO(lbrc_combo, US_LBRC),
-  COMBO(rbrc_combo, US_RBRC)
+  COMBO(lbrc_combo, DE_LBRC),
+  COMBO(lprn_combo, DE_LPRN),
+  COMBO(rprn_combo, DE_RPRN),
+  COMBO(rbrc_combo, DE_RBRC)
 };
 
 /**********
@@ -314,13 +316,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [L_BASE] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         KC_ESC,          US_1,            US_2,            US_3,            US_4,            US_5,                                                 US_6,            US_7,            US_8,            US_9,            US_0,            KC_BSPC,
+         KC_ESC,          DE_1,            DE_2,            DE_3,            DE_4,            DE_5,                                                 DE_6,            DE_7,            DE_8,            DE_9,            DE_0,            KC_BSPC,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         KC_TAB,          US_Q,            US_W,            MC_E_EURO,       US_R,            US_T,                                                 US_Z,            MC_U_UE,         US_I,            MC_O_OE,         US_P,            KC_DEL,
+         KC_TAB,          DE_Q,            DE_W,            DE_E_EURO,       DE_R,            DE_T,                                                 DE_Z,            DE_U_UE,         DE_I,            DE_O_OE,         DE_P,            DE_BSLS,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         CW_TOGG,         MC_A_AE,         MC_S_SS,         US_D,            US_F,            US_G,                                                 US_H,            US_J,            US_K,            US_L,            US_SCLN,         US_ACUT,
+         CW_TOGG,         DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         SFT_T(KC_BSLS),  US_Y,            US_X,            US_C,            US_V,            US_B,            XXXXXXX,            KC_MUTE,         US_N,            US_M,            US_COMM,         US_DOT,          US_SLSH,         KC_RSFT,
+         KC_LSFT,         DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -335,7 +337,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
          _______,         OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,                                              _______,         KC_LEFT,         KC_DOWN,         KC_RGHT,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         _______,         _______,         _______,         _______,         _______,         _______,            _______,         C(US_Z),         C(US_V),         C(US_C),         C(US_X),         C(US_Y),         _______, 
+         _______,         _______,         _______,         _______,         _______,         _______,         _______,            _______,         C(DE_Z),         C(DE_V),         C(DE_C),         C(DE_X),         C(DE_Y),         _______, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            _______,         _______,         _______,         _______,         _______,            _______,         _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -347,13 +349,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         KC_MPLY,         KC_MSTP,         KC_MPRV,         KC_MNXT,         KC_MUTE,                                              _______,         _______,         _______,         _______,         _______,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤     
-         _______,         US_LBRC,         US_7,            US_8,            US_9,            US_RBRC,                                               _______,         _______,         _______,         TD_RESET,        TD_BOOT,         _______, 
+         _______,         DE_CIRC,         DE_7,            DE_8,            DE_9,            DE_ACUT,                                               _______,         _______,         _______,         TD_RESET,        TD_BOOT,         _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤          
-         _______,         US_MINS,         US_4,            US_5,            US_6,            US_EQL,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______, 
+         _______,         DE_LBRC,         DE_4,            DE_5,            DE_6,            DE_RBRC,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______, 
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         US_LPRN,         US_1,            US_2,            US_3,            US_RPRN,         _______,            _______,         _______,         _______,         _______,         _______,         _______,         _______, 
+         _______,         DE_LABK,         DE_1,            DE_2,            DE_3,            DE_HASH,         _______,            _______,         _______,         _______,         _______,         _______,         _______,         _______, 
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           _______,         _______,         US_COMM,         US_DOT,          US_0,               _______,         _______,         _______,         _______,         _______
+                                           _______,         _______,         DE_COMM,         DE_DOT,          DE_0,               _______,         _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
   ),
 
