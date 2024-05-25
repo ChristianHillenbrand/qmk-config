@@ -10,6 +10,6 @@ KEY_OVERRIDE_ENABLE = yes
 
 RGB_MATRIX_ENABLE = yes
 
-SRC += features/layer_lock.c
+SRC += features/layer_lock.c oled.c
 
 TAP_DANCE_ENABLE = yes
