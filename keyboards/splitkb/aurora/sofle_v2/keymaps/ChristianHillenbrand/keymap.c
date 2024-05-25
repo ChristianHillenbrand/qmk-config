@@ -346,6 +346,13 @@ combo_t key_combos[] = {
   COMBO(rbrc_combo, DE_RBRC)
 };
 
+uint8_t combo_ref_from_layer(uint8_t layer){
+  switch (layer){
+    case L_COLMK: return L_QWRTY;
+    default: return layer;
+  }
+}
+
 /**********
  * KEYMAP *
  **********/
