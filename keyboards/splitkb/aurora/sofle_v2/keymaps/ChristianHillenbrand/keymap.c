@@ -564,18 +564,11 @@ struct rgb_data_t read_rgb_data(void) {
   return rgb_data;
 }
 
-bool compare_rgb_data(struct rgb_data_t a, struct rgb_data_t b) {
-  return 
-    a.enable == b.enable &&
-    a.mode   == b.mode   && 
-    a.hsv.h  == b.hsv.h  &&
-    a.hsv.s  == b.hsv.s  &&
-    a.hsv.v  == b.hsv.v  &&
-    a.speed  == b.speed;
-}
+void render_rgb_data(void) {
+  struct rgb_data_t rgb_data = read_rgb_data();
 
-void render_rgb_data(struct rgb_data_t rgb_data) {
   oled_write_ln_P(PSTR("RGB"), rgb_data.enable);
+  
   render_space();
 
   char mode_str[4];
@@ -583,6 +576,9 @@ void render_rgb_data(struct rgb_data_t rgb_data) {
 
   oled_write_P(PSTR("M:"), false);
   oled_write_P(PSTR(mode_str), false);
+
+  render_space();
+  render_line();
   render_space();
 
   char hue_str[4];
@@ -595,10 +591,15 @@ void render_rgb_data(struct rgb_data_t rgb_data) {
 
   oled_write_P(PSTR("H:"), false);
   oled_write_P(PSTR(hue_str), false);
+  render_space();
   oled_write_P(PSTR("S:"), false);
   oled_write_P(PSTR(sat_str), false);
+  render_space();
   oled_write_P(PSTR("V:"), false);
   oled_write_P(PSTR(val_str), false);
+
+  render_space();
+  render_line();
   render_space();
 
   char speed_str[4];
@@ -608,39 +609,36 @@ void render_rgb_data(struct rgb_data_t rgb_data) {
   oled_write_P(PSTR(speed_str), false);
 }
 
+bool render_central(void) {
+  render_mode();
+  render_space();
+  render_line();
+  render_space();
+  render_layer();
+  render_space();
+  render_line();
+  render_space();
+  render_mod_status_gui_alt(get_mods() | get_oneshot_mods());
+  render_mod_status_ctrl_shift(get_mods() | get_oneshot_mods());
+  return false;
+}
+
+bool render_peripheral(void) {
+  if (get_highest_layer(layer_state) != L_NAV) {
+    return true;
+  }
+
+  oled_clear();
+  render_space();
+  render_rgb_data();
+  return false;
+}
+
 bool oled_task_user(void) {
   if (is_keyboard_master()) {
-    render_mode();
-    render_space();
-    render_line();
-    render_space();
-    render_layer();
-    render_space();
-    render_line();
-    render_space();
-    render_mod_status_gui_alt(get_mods() | get_oneshot_mods());
-    render_mod_status_ctrl_shift(get_mods() | get_oneshot_mods());
+    return render_central();
   }
   else {
-    static struct rgb_data_t cur_rgb_data = {};
-    static uint32_t rgb_data_timer = 0;
-
-    struct rgb_data_t new_rgb_data = read_rgb_data();
-    if (!compare_rgb_data(cur_rgb_data, new_rgb_data)) {
-      rgb_data_timer = timer_read32() + 10000;
-      cur_rgb_data = new_rgb_data;
-      oled_clear();
-    }
-
-    if (timer_expired32(timer_read32(), rgb_data_timer)) {
-      return true;
-    }
-    
-    render_logo();
-    render_logo_text();
-    render_space();
-    render_rgb_data(cur_rgb_data);
+    return render_peripheral();
   }
-
-  return false;
 }
