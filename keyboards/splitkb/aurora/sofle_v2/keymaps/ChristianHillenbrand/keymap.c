@@ -492,17 +492,16 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
  * OLED *
  ********/
 
-void render_empty(void) {
-  oled_write_P(PSTR("     "), false);
-}
+extern void render_space(void);
+extern void render_logo(void);
+extern void render_logo_text(void);
 
 void render_line(void) {
-  oled_write_P(PSTR("-----"), false);
+  static const char PROGMEM line[] = {0xD1, 0xD1, 0xD1, 0xD1, 0xD1, 0};
+  oled_write_P(line, false);
 }
 
-void render_mode(void) {
-  oled_write_P(PSTR("MODE "), false);
-  render_empty();
+void render_default_layer(void) {
   switch (get_highest_layer(default_layer_state)) {
     case L_QWRTY:
       oled_write_P(PSTR("QWRTY"), false);
@@ -520,23 +519,23 @@ void render_mode(void) {
 
 void render_layer(void) {
   oled_write_P(PSTR("LAYER"), false);
-  render_empty();
+  render_space();
   switch (get_highest_layer(layer_state)) {
     case L_QWRTY:
     case L_COLMK:
-      oled_write_P(PSTR("BASE "), false);
+      render_default_layer();
       break;
 
     case L_NAV:
-      oled_write_P(PSTR("NAV  "), false);
+      oled_write_P(PSTR(" NAV "), false);
       break;
 
     case L_NUM:
-      oled_write_P(PSTR("NUM  "), false);
+      oled_write_P(PSTR(" NUM "), false);
       break;
 
     case L_FUN:
-      oled_write_P(PSTR("FUN  "), false);
+      oled_write_P(PSTR(" FUN "), false);
       break;
 
     default:
@@ -697,7 +696,7 @@ void render_rgb_data(void) {
 
   oled_write_ln_P(PSTR("RGB"), rgb_data.enable);
   
-  render_empty();
+  render_space();
 
   char mode_str[4];
   sprintf(mode_str, "%3d", rgb_data.mode);
@@ -705,9 +704,9 @@ void render_rgb_data(void) {
   oled_write_P(PSTR("M:"), false);
   oled_write_P(PSTR(mode_str), false);
 
-  render_empty();
+  render_space();
   render_line();
-  render_empty();
+  render_space();
 
   char hue_str[4];
   char sat_str[4];
@@ -719,16 +718,16 @@ void render_rgb_data(void) {
 
   oled_write_P(PSTR("H:"), false);
   oled_write_P(PSTR(hue_str), false);
-  render_empty();
+  render_space();
   oled_write_P(PSTR("S:"), false);
   oled_write_P(PSTR(sat_str), false);
-  render_empty();
+  render_space();
   oled_write_P(PSTR("V:"), false);
   oled_write_P(PSTR(val_str), false);
 
-  render_empty();
+  render_space();
   render_line();
-  render_empty();
+  render_space();
 
   char speed_str[4];
   sprintf(speed_str, "%3d", rgb_data.speed);
@@ -738,14 +737,13 @@ void render_rgb_data(void) {
 }
 
 bool render_central(void) {
-  render_mode();
-  render_empty();
+  render_logo();
+  render_logo_text();
+  render_space();
   render_line();
-  render_empty();
   render_layer();
-  render_empty();
   render_line();
-  render_empty();
+  render_space();
   render_mod_status_shift_ctrl(get_mods() | get_oneshot_mods());
   render_mod_status_alt_gui(get_mods() | get_oneshot_mods());
   return false;
@@ -757,7 +755,7 @@ bool render_peripheral(void) {
   }
 
   oled_clear();
-  render_empty();
+  render_space();
   render_rgb_data();
   return false;
 }
