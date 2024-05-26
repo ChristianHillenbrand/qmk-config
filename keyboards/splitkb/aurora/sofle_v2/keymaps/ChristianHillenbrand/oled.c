@@ -263,11 +263,11 @@ void render_rgb_data(void) {
 #define NUM_IDLE_FRAMES 5
 #define NUM_TAP_FRAMES 2
 
-#define BONGO_CAT_ROWS 4
-#define BONGO_CAT_COLS 9
+#define BONGOCAT_HEIGHT 4
+#define BONGOCAT_WIDTH 9
 
-#define BONGO_CAT_X 8
-#define BONGO_CAT_Y 0
+#define BONGOCAT_X 9
+#define BONGOCAT_Y 0
 
 void render_wpm(void) {
   static char wpm[10];
@@ -330,15 +330,47 @@ uint8_t get_bongocat_state(void) {
   return bongocat_state;
 }
 
-void render_bongocat_frame(const char PROGMEM frame[BONGO_CAT_ROWS][BONGO_CAT_COLS]) {
-  for (uint8_t i = 0; i < BONGO_CAT_ROWS; i++) {
-    oled_set_cursor(BONGO_CAT_X, BONGO_CAT_Y + i);
-    oled_write_P(frame[i], false);
+void render_bongocat_table(void) {
+//   uint8_t i;
+//   uint8_t y = 31;
+//   uint8_t j = 0;
+//   for (i = 17; i < 57; i++) {
+//     oled_write_pixel(i, y, true);
+//     if (j == 4) {
+//       --y;
+//       j=0;
+//     } else {
+//       j++;
+//     }
+//   }
+
+  uint8_t x = (BONGOCAT_X + BONGOCAT_WIDTH - 1) * OLED_FONT_WIDTH - 5;
+  uint8_t y = (BONGOCAT_Y + 2) * OLED_FONT_HEIGHT - 1;
+
+  uint8_t n = 0;
+  for (; x < OLED_DISPLAY_WIDTH; x++) {
+    oled_write_pixel(x, y, true);
+    if (n == 3) { y--; n = 0; }
+    else { n++; }
   }
 }
 
+void render_bongocat_frame(const char PROGMEM frame[BONGOCAT_HEIGHT][BONGOCAT_WIDTH]) {
+  static const char (*prev_frame)[BONGOCAT_WIDTH] = 0;
+
+  if (frame == prev_frame)
+    return;
+
+  for (uint8_t i = 0; i < BONGOCAT_HEIGHT; i++) {
+    oled_set_cursor(BONGOCAT_X, BONGOCAT_Y + i);
+    oled_write_P(frame[i], false);
+  }
+
+  prev_frame = frame;
+}
+
 void render_bongocat_sleep(void) {
-  static const char PROGMEM sleep_frame[BONGO_CAT_ROWS][BONGO_CAT_COLS] = {
+  static const char PROGMEM sleep_frame[BONGOCAT_HEIGHT][BONGOCAT_WIDTH] = {
     {0x20, 0xd4, 0xb3, 0xbe, 0xc3, 0xdc, 0},
     {0xb6, 0xcf, 0xd3, 0x20, 0xa9, 0xa0, 0xb1, 0},
     {0xa1, 0xd9, 0xc1, 0xa3, 0xbb, 0xc9, 0xbd, 0x20, 0},
@@ -352,7 +384,7 @@ void render_bongocat_idle(void) {
   static uint8_t idle_frame = 0;
   static uint32_t frame_timer = 0;
 
-  static const char PROGMEM idle_frames[NUM_IDLE_FRAMES][BONGO_CAT_ROWS][BONGO_CAT_COLS] = {
+  static const char PROGMEM idle_frames[NUM_IDLE_FRAMES][BONGOCAT_HEIGHT][BONGOCAT_WIDTH] = {
     {
       {0x20, 0xd4, 0xb3, 0xc5, 0xc8, 0xdc, 0},
       {0xb5, 0xcf, 0xd3, 0x20, 0xa9, 0xa0, 0xb1, 0},
@@ -397,7 +429,7 @@ void render_bongocat_idle(void) {
 }
 
 void render_bongocat_prep(void) {
-  static const char PROGMEM prep_frame[BONGO_CAT_ROWS][BONGO_CAT_COLS] = {
+  static const char PROGMEM prep_frame[BONGOCAT_HEIGHT][BONGOCAT_WIDTH] = {
     {0xa6, 0xd4, 0xb3, 0xc6, 0xc0, 0xdc, 0},
     {0xb4, 0xcc, 0xd3, 0x20, 0xaa, 0xd0, 0xb0, 0},
     {0xa8, 0xb9, 0xa4, 0xb2, 0xbb, 0xca, 0xce, 0xd2, 0},
@@ -413,7 +445,7 @@ void render_bongocat_tap(void) {
   static uint8_t tap_frame = 0;
   static matrix_row_t prev_matrix[MATRIX_ROWS] = {};
 
-  static const char PROGMEM tap_frames[NUM_TAP_FRAMES][BONGO_CAT_ROWS][BONGO_CAT_COLS] = {
+  static const char PROGMEM tap_frames[NUM_TAP_FRAMES][BONGOCAT_HEIGHT][BONGOCAT_WIDTH] = {
     {
       {0xa6, 0xd4, 0xb3, 0xc6, 0xc0, 0xdc, 0},
       {0xb4, 0xcc, 0xd3, 0x20, 0xaa, 0xd1, 0xb1, 0},
@@ -446,6 +478,7 @@ void render_bongocat_tap(void) {
 void render_bongocat(void) {
   render_wpm();
 
+  render_bongocat_table();
   switch (get_bongocat_state()) {
     case sleep:
       render_bongocat_sleep();
