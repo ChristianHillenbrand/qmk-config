@@ -252,15 +252,10 @@ void render_rgb_data(void) {
   oled_write_P(PSTR(speed_str), false);
 }
 
-void render_wpm(void) {
-  static char wpm[10];
-
-  oled_set_cursor(0, 0);
-  sprintf(wpm, "WPM: %-3d", get_current_wpm());
-  oled_write(PSTR(wpm), false);
-}
-
 #define FRAME_DURATION 100
+
+#define IDLE_TIMEOUT 1000
+#define SLEEP_TIMEOUT 10000
 
 #define NUM_IDLE_FRAMES 5
 #define NUM_PREP_FRAMES 1
@@ -269,10 +264,71 @@ void render_wpm(void) {
 #define CAT_ROWS 4
 #define CAT_COLS 8
 
-#define CAT_POS_X 8
-#define CAT_POS_Y 0
+#define CAT_X 8
+#define CAT_Y 0
 
-void render_idle_cat(void) {
+void render_wpm(void) {
+  static char wpm[10];
+
+  oled_set_cursor(0, 0);
+  sprintf(wpm, "WPM: %-3d", get_current_wpm());
+  oled_write(PSTR(wpm), false);
+}
+
+enum bongocat_states { sleep, idle, prep, tap };
+
+uint8_t get_bongocat_state(void) {
+  extern matrix_row_t matrix[MATRIX_ROWS];
+
+  static uint8_t bongocat_state = idle;
+  static uint32_t idle_timer = 0;
+
+  bool key_pressed = false;
+  for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
+    if (matrix[i] > 0) {
+      key_pressed = true;
+      break;
+    }
+  }
+
+  switch (bongocat_state) {
+    case sleep:
+      if(key_pressed) {
+        bongocat_state = tap;
+      }
+      break;
+
+    case idle:
+      if(key_pressed) {
+        bongocat_state = tap;
+      } else if (timer_elapsed32(idle_timer) > SLEEP_TIMEOUT) {
+        bongocat_state = sleep;
+      }
+      break;
+
+    case prep:
+      if(key_pressed) {
+        bongocat_state = tap;
+      } else if (timer_elapsed32(idle_timer) > IDLE_TIMEOUT) {
+        bongocat_state = idle;
+      }
+      break;
+
+    case tap:
+      if (!key_pressed) {
+        idle_timer = timer_read32();
+        bongocat_state = prep;
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return bongocat_state;
+}
+
+void render_idle_bongocat(void) {
   static uint8_t idle_frame = 0;
   static uint32_t frame_timer = 0;
 
@@ -315,7 +371,7 @@ void render_idle_cat(void) {
 
   if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
     for (uint8_t i = 0; i < CAT_ROWS; i++) {
-      oled_set_cursor(CAT_POS_X, CAT_POS_Y + i);
+      oled_set_cursor(CAT_X, CAT_Y + i);
       oled_write_P(idle_frames[idle_frame][i], false);
     }
 
@@ -324,11 +380,31 @@ void render_idle_cat(void) {
   }
 }
 
-bool render_central(void) {
+void render_bongocat(void) {
   render_wpm();
-  render_idle_cat();
-  return false;
 
+  switch (get_bongocat_state()) {
+    case sleep:
+      break;
+
+    case idle:
+      render_idle_bongocat();
+      break;
+
+    case prep:
+      break;
+
+    case tap:
+      break;
+
+    default:
+      break;
+  }
+}
+
+bool render_central(void) {
+  render_bongocat();
+  return false;
 
   render_logo();
   render_logo_text();
