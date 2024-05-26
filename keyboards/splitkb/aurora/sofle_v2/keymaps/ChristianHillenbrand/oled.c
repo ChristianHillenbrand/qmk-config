@@ -19,13 +19,6 @@ void render_line(void) {
   oled_write_P(PSTR("-----"), false);
 }
 
-oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (!is_keyboard_master()) {
-    return OLED_ROTATION_180;
-  }
-  return rotation;
-}
-
 void render_default_layer(void) {
   switch (get_highest_layer(default_layer_state)) {
     case L_QWRTY:
@@ -523,6 +516,18 @@ bool render_central(void) {
 bool render_peripheral(void) {
   render_bongocat();
   return false;
+}
+
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  if (is_keyboard_master()) {
+    return rotation;
+  }
+
+  if (is_keyboard_left()) {
+    return OLED_ROTATION_0;
+  } else {
+    return OLED_ROTATION_180;
+  }
 }
 
 bool oled_task_user(void) {
