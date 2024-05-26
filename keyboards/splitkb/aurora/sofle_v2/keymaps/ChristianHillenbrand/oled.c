@@ -334,6 +334,17 @@ void render_bongocat_frame(const char PROGMEM frame[CAT_ROWS][CAT_COLS]) {
   }
 }
 
+void render_bongocat_sleep(void) {
+  static const char PROGMEM sleep_frame[CAT_ROWS][CAT_COLS] = {
+    {0x20, 0xd4, 0xb3, 0xbe, 0xc3, 0xdc, 0},
+    {0xb6, 0xcf, 0xd3, 0x20, 0xa9, 0xa0, 0xb1, 0},
+    {0xa1, 0xd9, 0xc1, 0xa3, 0xbb, 0xc9, 0xbd, 0x20, 0},
+    {0x20, 0xcd, 0xC4, 0xdd, 0x20, 0x20, 0x20, 0x20, 0}
+  };
+
+  render_bongocat_frame(sleep_frame);
+}
+
 void render_bongocat_idle(void) {
   static uint8_t idle_frame = 0;
   static uint32_t frame_timer = 0;
@@ -376,9 +387,9 @@ void render_bongocat_idle(void) {
   };
 
   if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
+    frame_timer = timer_read32();
     render_bongocat_frame(idle_frames[idle_frame]);
     idle_frame = (idle_frame + 1) % NUM_IDLE_FRAMES;
-    frame_timer = timer_read32();
   }
 }
 
@@ -417,7 +428,7 @@ void render_bongocat_tap(void) {
 
   bool new_tap = false;
   for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-    if (matrix[i] > prev_matrix[i]) {
+    if (matrix[i] != prev_matrix[i]) {
       new_tap = true;
     }
     prev_matrix[i] = matrix[i];
@@ -434,6 +445,7 @@ void render_bongocat(void) {
 
   switch (get_bongocat_state()) {
     case sleep:
+      render_bongocat_sleep();
       break;
 
     case idle:
@@ -452,6 +464,8 @@ void render_bongocat(void) {
       break;
   }
 }
+
+#include "features/bongocat.h"
 
 bool render_central(void) {
   render_bongocat();
