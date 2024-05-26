@@ -255,16 +255,16 @@ void render_rgb_data(void) {
 #define FRAME_DURATION 100
 
 #define IDLE_TIMEOUT 1000
-#define SLEEP_TIMEOUT 10000
+#define SLEEP_TIMEOUT 60000
 
 #define NUM_IDLE_FRAMES 5
 #define NUM_TAP_FRAMES 2
 
-#define CAT_ROWS 4
-#define CAT_COLS 9
+#define BONGO_CAT_ROWS 4
+#define BONGO_CAT_COLS 9
 
-#define CAT_X 8
-#define CAT_Y 0
+#define BONGO_CAT_X 8
+#define BONGO_CAT_Y 0
 
 void render_wpm(void) {
   static char wpm[10];
@@ -327,15 +327,15 @@ uint8_t get_bongocat_state(void) {
   return bongocat_state;
 }
 
-void render_bongocat_frame(const char PROGMEM frame[CAT_ROWS][CAT_COLS]) {
-  for (uint8_t i = 0; i < CAT_ROWS; i++) {
-    oled_set_cursor(CAT_X, CAT_Y + i);
+void render_bongocat_frame(const char PROGMEM frame[BONGO_CAT_ROWS][BONGO_CAT_COLS]) {
+  for (uint8_t i = 0; i < BONGO_CAT_ROWS; i++) {
+    oled_set_cursor(BONGO_CAT_X, BONGO_CAT_Y + i);
     oled_write_P(frame[i], false);
   }
 }
 
 void render_bongocat_sleep(void) {
-  static const char PROGMEM sleep_frame[CAT_ROWS][CAT_COLS] = {
+  static const char PROGMEM sleep_frame[BONGO_CAT_ROWS][BONGO_CAT_COLS] = {
     {0x20, 0xd4, 0xb3, 0xbe, 0xc3, 0xdc, 0},
     {0xb6, 0xcf, 0xd3, 0x20, 0xa9, 0xa0, 0xb1, 0},
     {0xa1, 0xd9, 0xc1, 0xa3, 0xbb, 0xc9, 0xbd, 0x20, 0},
@@ -349,7 +349,7 @@ void render_bongocat_idle(void) {
   static uint8_t idle_frame = 0;
   static uint32_t frame_timer = 0;
 
-  static const char PROGMEM idle_frames[NUM_IDLE_FRAMES][CAT_ROWS][CAT_COLS] = {
+  static const char PROGMEM idle_frames[NUM_IDLE_FRAMES][BONGO_CAT_ROWS][BONGO_CAT_COLS] = {
     {
       {0x20, 0xd4, 0xb3, 0xc5, 0xc8, 0xdc, 0},
       {0xb5, 0xcf, 0xd3, 0x20, 0xa9, 0xa0, 0xb1, 0},
@@ -394,7 +394,7 @@ void render_bongocat_idle(void) {
 }
 
 void render_bongocat_prep(void) {
-  static const char PROGMEM prep_frame[CAT_ROWS][CAT_COLS] = {
+  static const char PROGMEM prep_frame[BONGO_CAT_ROWS][BONGO_CAT_COLS] = {
     {0xa6, 0xd4, 0xb3, 0xc6, 0xc0, 0xdc, 0},
     {0xb4, 0xcc, 0xd3, 0x20, 0xaa, 0xd0, 0xb0, 0},
     {0xa8, 0xb9, 0xa4, 0xb2, 0xbb, 0xca, 0xce, 0x20, 0},
@@ -410,7 +410,7 @@ void render_bongocat_tap(void) {
   static uint8_t tap_frame = 0;
   static matrix_row_t prev_matrix[MATRIX_ROWS] = {};
 
-  static const char PROGMEM tap_frames[NUM_TAP_FRAMES][CAT_ROWS][CAT_COLS] = {
+  static const char PROGMEM tap_frames[NUM_TAP_FRAMES][BONGO_CAT_ROWS][BONGO_CAT_COLS] = {
     {
       {0xa6, 0xd4, 0xb3, 0xc6, 0xc0, 0xdc, 0},
       {0xb4, 0xcc, 0xd3, 0x20, 0xaa, 0xd1, 0xb1, 0},
