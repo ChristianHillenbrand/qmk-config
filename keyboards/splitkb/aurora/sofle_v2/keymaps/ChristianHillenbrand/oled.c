@@ -324,28 +324,33 @@ uint8_t get_bongocat_state(void) {
 }
 
 void render_bongocat_table(void) {
-//   uint8_t i;
-//   uint8_t y = 31;
-//   uint8_t j = 0;
-//   for (i = 17; i < 57; i++) {
-//     oled_write_pixel(i, y, true);
-//     if (j == 4) {
-//       --y;
-//       j=0;
-//     } else {
-//       j++;
-//     }
-//   }
+  static bool table_already_rendered = false;
 
-  uint8_t x = (BONGOCAT_X + BONGOCAT_WIDTH - 1) * OLED_FONT_WIDTH - 5;
-  uint8_t y = (BONGOCAT_Y + 2) * OLED_FONT_HEIGHT - 1;
+  if (table_already_rendered) {
+    return;
+  }
+
+  uint8_t x = BONGOCAT_X * OLED_FONT_WIDTH;
+  uint8_t y = (BONGOCAT_Y + 3) * OLED_FONT_HEIGHT;
 
   uint8_t n = 0;
+  for (; x > 0; x--) {
+    oled_write_pixel(x, y, true);
+    if (n == 4) { y++; n = 0; }
+    else { n++; }
+  }
+
+  x = (BONGOCAT_X + BONGOCAT_WIDTH - 1) * OLED_FONT_WIDTH - 5;
+  y = (BONGOCAT_Y + 2) * OLED_FONT_HEIGHT - 1;
+
+  n = 0;
   for (; x < OLED_DISPLAY_WIDTH; x++) {
     oled_write_pixel(x, y, true);
     if (n == 3) { y--; n = 0; }
     else { n++; }
   }
+
+  table_already_rendered = true;
 }
 
 void render_bongocat_frame(const char PROGMEM frame[BONGOCAT_HEIGHT][BONGOCAT_WIDTH]) {
