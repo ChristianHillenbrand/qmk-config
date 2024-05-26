@@ -10,6 +10,13 @@ void render_line(void) {
   oled_write_P(PSTR("-----"), false);
 }
 
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  if (is_keyboard_master()) {
+    return OLED_ROTATION_0;
+  }
+  return rotation;
+}
+
 void render_default_layer(void) {
   switch (get_highest_layer(default_layer_state)) {
     case L_QWRTY:
@@ -243,6 +250,64 @@ void render_rgb_data(void) {
 
   oled_write_P(PSTR("S:"), false);
   oled_write_P(PSTR(speed_str), false);
+}
+
+void render_wpm(void) {
+  static char wpm[10];
+
+  oled_set_cursor(0, 0);
+  sprintf(wpm, "WPM: %-3d", get_current_wpm());
+  oled_write(PSTR(wpm), false);
+}
+
+#define FRAME_DURATION 100
+
+#define NUM_IDLE_FRAMES 3
+#define NUM_PREP_FRAMES 1
+#define NUM_TAP_FRAMES 2
+
+#define CAT_ROWS 4
+#define CAT_COLS 9
+
+#define CAT_POS_X 8
+#define CAT_POS_Y 0
+
+void render_idle_cat(void) {
+  static uint8_t idle_frame = 0;
+  static uint32_t frame_timer = 0;
+
+  static const char PROGMEM idle_frames[NUM_IDLE_FRAMES][CAT_ROWS][CAT_COLS] = {
+    {
+      {0x20, 0xD4, 0xB3, 0xBE, 0xC3, 0xDC, 0},
+      {0xB6, 0xCF, 0xD3, 0x20, 0xA9, 0xA0, 0xB1, 0},
+      {0xA1, 0xD9, 0xC1, 0xA3, 0xBB, 0xC9, 0xBD, 0xD2, 0},
+      {0x20, 0xCD, 0xC4, 0xDD, 0x20, 0x20, 0x20, 0}
+    },
+
+    {
+      {0x20, 0xD4, 0xB3, 0xBE, 0xC3, 0xDC, 0},
+      {0xB6, 0xCF, 0xD3, 0x20, 0xA9, 0xA0, 0xB1, 0},
+      {0xA1, 0xD9, 0xC1, 0xA3, 0xBB, 0xC9, 0xBD, 0xD2, 0},
+      {0x20, 0xCD, 0xC4, 0xDD, 0x20, 0x20, 0x20, 0}
+    },
+
+    {
+      {0x20, 0xD5, 0xAE, 0xBF, 0xB7, 0},
+      {0xAF, 0xCB, 0x20, 0x20, 0xD6, 0xA5, 0xAD, 0},
+      {0xA7, 0xD8, 0xB8, 0xA2, 0xBA, 0xC7, 0xBD, 0xD2, 0},
+      {0x20, 0xCD, 0xC4, 0xDD, 0x20, 0x20, 0x20, 0}
+    }
+  };
+
+  if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
+    for (uint8_t i = 0; i < CAT_ROWS; i++) {
+      oled_set_cursor(CAT_POS_X, CAT_POS_Y + i);
+      oled_write_P(idle_frames[idle_frame][i], false);
+    }
+
+    idle_frame = (idle_frame + 1) % NUM_IDLE_FRAMES;
+    frame_timer = timer_read32();
+  }
 }
 
 bool render_central(void) {
