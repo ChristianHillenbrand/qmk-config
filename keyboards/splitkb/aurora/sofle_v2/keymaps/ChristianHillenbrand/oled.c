@@ -1,6 +1,15 @@
 #include QMK_KEYBOARD_H
 
 #include "layers.h"
+#include "oled.h"
+
+#define RGB_TIMEOUT 5000
+
+static uint32_t rgb_timer = 0;
+
+void show_rgb_status(void) {
+  rgb_timer = timer_read32();
+}
 
 extern void render_space(void);
 extern void render_logo(void);
@@ -11,8 +20,8 @@ void render_line(void) {
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (is_keyboard_master()) {
-    return OLED_ROTATION_0;
+  if (!is_keyboard_master()) {
+    return OLED_ROTATION_180;
   }
   return rotation;
 }
@@ -210,8 +219,8 @@ struct rgb_data_t read_rgb_data(void) {
 void render_rgb_data(void) {
   struct rgb_data_t rgb_data = read_rgb_data();
 
-  oled_write_ln_P(PSTR("RGB"), rgb_data.enable);
-
+  render_space();
+  oled_write_P(PSTR(" RGB "), rgb_data.enable);
   render_space();
 
   char mode_str[4];
@@ -220,9 +229,7 @@ void render_rgb_data(void) {
   oled_write_P(PSTR("M:"), false);
   oled_write_P(PSTR(mode_str), false);
 
-  render_space();
   render_line();
-  render_space();
 
   char hue_str[4];
   char sat_str[4];
@@ -234,16 +241,12 @@ void render_rgb_data(void) {
 
   oled_write_P(PSTR("H:"), false);
   oled_write_P(PSTR(hue_str), false);
-  render_space();
   oled_write_P(PSTR("S:"), false);
   oled_write_P(PSTR(sat_str), false);
-  render_space();
   oled_write_P(PSTR("V:"), false);
   oled_write_P(PSTR(val_str), false);
 
-  render_space();
   render_line();
-  render_space();
 
   char speed_str[4];
   sprintf(speed_str, "%3d", rgb_data.speed);
@@ -465,40 +468,34 @@ void render_bongocat(void) {
   }
 }
 
-#include "features/bongocat.h"
-
 bool render_central(void) {
-  render_bongocat();
-  return false;
-
   render_logo();
   render_logo_text();
   render_line();
-  render_space();
-  render_layer();
-  render_space();
-  render_line();
-  render_mod_status_shift_ctrl(get_mods() | get_oneshot_mods());
-  render_mod_status_alt_gui(get_mods() | get_oneshot_mods());
+
+  if (rgb_timer && timer_elapsed32(rgb_timer) < RGB_TIMEOUT) {
+    render_rgb_data();
+  } else {
+    render_space();
+    render_layer();
+    render_space();
+    render_line();
+    render_mod_status_shift_ctrl(get_mods() | get_oneshot_mods());
+    render_mod_status_alt_gui(get_mods() | get_oneshot_mods());
+  }
+
   return false;
 }
 
 bool render_peripheral(void) {
-  if (get_highest_layer(layer_state) != L_NAV) {
-    return true;
-  }
-
-  oled_clear();
-  render_space();
-  render_rgb_data();
+  render_bongocat();
   return false;
 }
 
 bool oled_task_user(void) {
   if (is_keyboard_master()) {
     return render_central();
-  }
-  else {
+  } else {
     return render_peripheral();
   }
 }
