@@ -7,8 +7,7 @@ extern void render_logo(void);
 extern void render_logo_text(void);
 
 void render_line(void) {
-  static const char PROGMEM line[] = {0xD1, 0xD1, 0xD1, 0xD1, 0xD1, 0};
-  oled_write_P(line, false);
+  oled_write_P(PSTR("-----"), false);
 }
 
 void render_default_layer(void) {
@@ -55,24 +54,24 @@ void render_layer(void) {
 }
 
 void render_mod_status_shift_ctrl(uint8_t modifiers) {
-  static const char PROGMEM shift_off_1[] = {0x89, 0x8a, 0};
-  static const char PROGMEM shift_off_2[] = {0xa9, 0xaa, 0};
-  static const char PROGMEM shift_on_1[] = {0x91, 0x92, 0};
-  static const char PROGMEM shift_on_2[] = {0xb1, 0xb2, 0};
-    
-  static const char PROGMEM ctrl_off_1[] = {0x8b, 0x8c, 0};
-  static const char PROGMEM ctrl_off_2[] = {0xab, 0xac, 0};
-  static const char PROGMEM ctrl_on_1[] = {0xcd, 0xce, 0};
-  static const char PROGMEM ctrl_on_2[] = {0xcf, 0xd0, 0};
+  static const char PROGMEM shift_off_1[] = {0x80, 0x81, 0};
+  static const char PROGMEM ctrl_off_1[]  = {0x82, 0x83, 0};
+  static const char PROGMEM shift_off_2[] = {0x84, 0x85, 0};
+  static const char PROGMEM ctrl_off_2[]  = {0x86, 0x87, 0};
 
-  static const char PROGMEM off_off_1[] = {0xc5, 0};
-  static const char PROGMEM off_off_2[] = {0xc6, 0};
-  static const char PROGMEM on_off_1[] = {0xc7, 0};
-  static const char PROGMEM on_off_2[] = {0xc8, 0};
-  static const char PROGMEM off_on_1[] = {0xc9, 0};
-  static const char PROGMEM off_on_2[] = {0xca, 0};
-  static const char PROGMEM on_on_1[] = {0xcb, 0};
-  static const char PROGMEM on_on_2[] = {0xcc, 0};
+  static const char PROGMEM shift_on_1[] = {0x88, 0x89, 0};
+  static const char PROGMEM ctrl_on_1[]  = {0x8a, 0x8b, 0};
+  static const char PROGMEM shift_on_2[] = {0x8c, 0x8d, 0};
+  static const char PROGMEM ctrl_on_2[]  = {0x8e, 0x8f, 0};
+
+  static const char PROGMEM off_off_1[] = {0x01, 0};
+  static const char PROGMEM off_off_2[] = {0x02, 0};
+  static const char PROGMEM on_off_1[]  = {0x03, 0};
+  static const char PROGMEM on_off_2[]  = {0x04, 0};
+  static const char PROGMEM off_on_1[]  = {0x05, 0};
+  static const char PROGMEM off_on_2[]  = {0x06, 0};
+  static const char PROGMEM on_on_1[]   = {0x07, 0};
+  static const char PROGMEM on_on_2[]   = {0x08, 0};
 
   if(modifiers & MOD_MASK_SHIFT) {
     oled_write_P(shift_on_1, false);
@@ -111,7 +110,7 @@ void render_mod_status_shift_ctrl(uint8_t modifiers) {
   } else {
     oled_write_P(off_off_2, false);
   }
-  
+
   if(modifiers & MOD_MASK_CTRL) {
     oled_write_P(ctrl_on_2, false);
   } else {
@@ -120,24 +119,24 @@ void render_mod_status_shift_ctrl(uint8_t modifiers) {
 }
 
 void render_mod_status_alt_gui(uint8_t modifiers) {
-  static const char PROGMEM alt_off_1[] = {0x85, 0x86, 0};
-  static const char PROGMEM alt_off_2[] = {0xa5, 0xa6, 0};
-  static const char PROGMEM alt_on_1[] = {0x8d, 0x8e, 0};
-  static const char PROGMEM alt_on_2[] = {0xad, 0xae, 0};
-    
-  static const char PROGMEM gui_off_1[] = {0x87, 0x88, 0};
-  static const char PROGMEM gui_off_2[] = {0xa7, 0xa8, 0};
-  static const char PROGMEM gui_on_1[] = {0x8f, 0x90, 0};
-  static const char PROGMEM gui_on_2[] = {0xaf, 0xb0, 0};
+  static const char PROGMEM alt_off_1[] = {0x90, 0x91, 0};
+  static const char PROGMEM gui_off_1[] = {0x92, 0x93, 0};
+  static const char PROGMEM alt_off_2[] = {0x94, 0x95, 0};
+  static const char PROGMEM gui_off_2[] = {0x96, 0x97, 0};
 
-  static const char PROGMEM off_off_1[] = {0xc5, 0};
-  static const char PROGMEM off_off_2[] = {0xc6, 0};
-  static const char PROGMEM on_off_1[] = {0xc7, 0};
-  static const char PROGMEM on_off_2[] = {0xc8, 0};
-  static const char PROGMEM off_on_1[] = {0xc9, 0};
-  static const char PROGMEM off_on_2[] = {0xca, 0};
-  static const char PROGMEM on_on_1[] = {0xcb, 0};
-  static const char PROGMEM on_on_2[] = {0xcc, 0};
+  static const char PROGMEM alt_on_1[] = {0x98, 0x99, 0};
+  static const char PROGMEM gui_on_1[] = {0x9a, 0x9b, 0};
+  static const char PROGMEM alt_on_2[] = {0x9c, 0x9d, 0};
+  static const char PROGMEM gui_on_2[] = {0x9e, 0x9f, 0};
+
+  static const char PROGMEM off_off_1[] = {0x01, 0};
+  static const char PROGMEM off_off_2[] = {0x02, 0};
+  static const char PROGMEM on_off_1[]  = {0x03, 0};
+  static const char PROGMEM on_off_2[]  = {0x04, 0};
+  static const char PROGMEM off_on_1[]  = {0x05, 0};
+  static const char PROGMEM off_on_2[]  = {0x06, 0};
+  static const char PROGMEM on_on_1[]   = {0x07, 0};
+  static const char PROGMEM on_on_2[]   = {0x08, 0};
 
   if(modifiers & MOD_MASK_ALT) {
     oled_write_P(alt_on_1, false);
@@ -205,7 +204,7 @@ void render_rgb_data(void) {
   struct rgb_data_t rgb_data = read_rgb_data();
 
   oled_write_ln_P(PSTR("RGB"), rgb_data.enable);
-  
+
   render_space();
 
   char mode_str[4];
