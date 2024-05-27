@@ -262,6 +262,38 @@ void render_rgb_data(void) {
 #define BONGOCAT_X 9
 #define BONGOCAT_Y 0
 
+extern matrix_row_t matrix[MATRIX_ROWS];
+static matrix_row_t prev_matrix[MATRIX_ROWS] = {};
+
+bool key_pressed(void) {
+  for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+    if (matrix[row] != 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool key_tapped(void) {
+  bool key_active(matrix_row_t matrix[MATRIX_ROWS], uint8_t row, uint8_t col) {
+    return (matrix[row] & ((matrix_row_t)1 << col));
+  }
+
+  for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+    for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+      if (key_active(matrix, row, col) && !key_active(prev_matrix, row, col))
+        return true;
+    }
+  }
+  return false;
+}
+
+void save_matrix(void) {
+  for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+    prev_matrix[row] = matrix[row];
+  }
+}
+
 void render_wpm(void) {
   static uint8_t prev_wpm = 0xff;
 
@@ -282,28 +314,18 @@ void render_wpm(void) {
 enum bongocat_states { sleep, idle, prep, tap };
 
 uint8_t get_bongocat_state(void) {
-  extern matrix_row_t matrix[MATRIX_ROWS];
-
   static uint8_t bongocat_state = idle;
   static uint32_t idle_timer = 0;
 
-  bool key_pressed = false;
-  for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-    if (matrix[i] > 0) {
-      key_pressed = true;
-      break;
-    }
-  }
-
   switch (bongocat_state) {
     case sleep:
-      if(key_pressed) {
+      if(key_pressed()) {
         bongocat_state = tap;
       }
       break;
 
     case idle:
-      if(key_pressed) {
+      if(key_pressed()) {
         bongocat_state = tap;
       } else if (timer_elapsed32(idle_timer) > SLEEP_TIMEOUT) {
         bongocat_state = sleep;
@@ -311,7 +333,7 @@ uint8_t get_bongocat_state(void) {
       break;
 
     case prep:
-      if(key_pressed) {
+      if(key_pressed()) {
         bongocat_state = tap;
       } else if (timer_elapsed32(idle_timer) > IDLE_TIMEOUT) {
         bongocat_state = idle;
@@ -319,7 +341,7 @@ uint8_t get_bongocat_state(void) {
       break;
 
     case tap:
-      if (!key_pressed) {
+      if (!key_pressed()) {
         idle_timer = timer_read32();
         bongocat_state = prep;
       }
@@ -452,10 +474,7 @@ void render_bongocat_prep(void) {
 }
 
 void render_bongocat_tap(void) {
-  extern matrix_row_t matrix[MATRIX_ROWS];
-
   static uint8_t tap_frame = 0;
-  static matrix_row_t prev_matrix[MATRIX_ROWS] = {};
 
   static const char PROGMEM tap_frames[NUM_TAP_FRAMES][BONGOCAT_HEIGHT][BONGOCAT_WIDTH] = {
     {
@@ -473,17 +492,9 @@ void render_bongocat_tap(void) {
     }
   };
 
-  bool new_tap = false;
-  for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-    if (matrix[i] != prev_matrix[i]) {
-      new_tap = true;
-    }
-    prev_matrix[i] = matrix[i];
-  }
-
-  if (new_tap) {
+  if (key_tapped()) {
     render_bongocat_frame(tap_frames[tap_frame]);
-    tap_frame = tap_frame == 0 ? 1 : 0;
+    tap_frame = (tap_frame + 1) % NUM_TAP_FRAMES;
   }
 }
 
@@ -511,6 +522,8 @@ void render_bongocat(void) {
     default:
       break;
   }
+
+  save_matrix();
 }
 
 bool render_central(void) {
