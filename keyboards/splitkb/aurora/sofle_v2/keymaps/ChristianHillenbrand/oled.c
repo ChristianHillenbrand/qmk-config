@@ -275,14 +275,9 @@ bool key_pressed(void) {
 }
 
 bool key_tapped(void) {
-  bool key_active(matrix_row_t matrix[MATRIX_ROWS], uint8_t row, uint8_t col) {
-    return (matrix[row] & ((matrix_row_t)1 << col));
-  }
-
   for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
-    for (uint8_t col = 0; col < MATRIX_COLS; col++) {
-      if (key_active(matrix, row, col) && !key_active(prev_matrix, row, col))
-        return true;
+    if (matrix[row] > prev_matrix[row]) {
+      return true;
     }
   }
   return false;
