@@ -263,11 +263,20 @@ void render_rgb_data(void) {
 #define BONGOCAT_Y 0
 
 void render_wpm(void) {
-  static char wpm[10];
+  static uint8_t prev_wpm = 0xff;
+
+  uint8_t cur_wpm = get_current_wpm();
+  if (cur_wpm == prev_wpm) {
+    return;
+  }
+
+  char wpm_str[10] = {};
+  sprintf(wpm_str, "WPM: %-3d", get_current_wpm());
 
   oled_set_cursor(0, 0);
-  sprintf(wpm, "WPM: %-3d", get_current_wpm());
-  oled_write(PSTR(wpm), false);
+  oled_write(PSTR(wpm_str), false);
+
+  prev_wpm = cur_wpm;
 }
 
 enum bongocat_states { sleep, idle, prep, tap };
@@ -420,9 +429,14 @@ void render_bongocat_idle(void) {
   };
 
   if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
-    frame_timer = timer_read32();
     render_bongocat_frame(idle_frames[idle_frame]);
     idle_frame = (idle_frame + 1) % NUM_IDLE_FRAMES;
+
+    if (timer_elapsed32(frame_timer) > 2 * FRAME_DURATION) {
+      frame_timer = timer_read32();
+    } else {
+      frame_timer += FRAME_DURATION;
+    }
   }
 }
 
