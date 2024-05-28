@@ -3,6 +3,8 @@
 #include "keymap_german.h"
 
 #include "features/layer_lock.h"
+#include "features/luna.h"
+
 #include "layers.h"
 #include "oled.h"
 
@@ -153,6 +155,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   }
 
   switch (keycode) {
+    case KC_SPC:
+      if (record->event.pressed) {
+        trigger_jump();
+      }
+      return true;
+
     case KC_LCLK:
       is_drag_active = false;
       return true;

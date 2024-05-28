@@ -4,6 +4,7 @@
 #include "oled.h"
 
 #include "features/bongocat.h"
+#include "features/luna.h"
 
 #define RGB_TIMEOUT 5000
 
@@ -270,20 +271,11 @@ bool render_central(void) {
 }
 
 bool render_peripheral(void) {
-  render_bongocat();
+  render_logo();
+  render_logo_text();
+  render_line();
+  render_luna(0, 8);
   return false;
-}
-
-oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (is_keyboard_master()) {
-    return rotation;
-  }
-
-  if (is_keyboard_left()) {
-    return OLED_ROTATION_0;
-  } else {
-    return OLED_ROTATION_180;
-  }
 }
 
 bool oled_task_user(void) {
