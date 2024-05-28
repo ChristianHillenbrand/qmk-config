@@ -1,5 +1,5 @@
 CONVERT_TO = liatris
-SRC += features/layer_lock.c oled.c
+SRC += features/bongocat.c features/layer_lock.c oled.c
 
 CAPS_WORD_ENABLE = yes
 COMBO_ENABLE = yes
