@@ -150,16 +150,6 @@ void render_luna(int LUNA_X, int LUNA_Y) {
     }
   }
 
-#if OLED_TIMEOUT > 0
-  // the animation prevents the normal timeout from occuring
-  if (last_input_activity_elapsed() > OLED_TIMEOUT && last_led_activity_elapsed() > OLED_TIMEOUT) {
-    oled_off();
-    return;
-  } else {
-    oled_on();
-  }
-#endif
-
   oled_set_cursor(LUNA_X, LUNA_Y);
   render_wpm();
   oled_write("     ", false);
