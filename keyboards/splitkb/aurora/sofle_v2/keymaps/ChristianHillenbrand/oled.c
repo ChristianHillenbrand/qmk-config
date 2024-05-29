@@ -278,6 +278,10 @@ bool render_peripheral(void) {
   return false;
 }
 
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  return rotation;
+}
+
 bool oled_task_user(void) {
   if (is_keyboard_master()) {
     return render_central();
