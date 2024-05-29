@@ -17,6 +17,35 @@ void keyboard_pre_init_user(void) {
   writePinHigh(24);
 }
 
+void caps_word_set_user(bool active) {
+  if (!is_keyboard_master()) {
+    return;
+  }
+
+  if (active) {
+    writePinLow(24);
+  } else {
+    writePinHigh(24);
+  }
+}
+
+bool led_update_user(led_t led_state) {
+  if (is_keyboard_master()) {
+    return false;
+  }
+
+  static bool caps_state = false;
+  if (led_state.caps_lock && !caps_state) {
+    writePinLow(24);
+    caps_state = true;
+  } else {
+    writePinHigh(24);
+    caps_state = false;
+  }
+
+  return true;
+}
+
 /*************
  * CAPS WORD *
  *************/
@@ -40,14 +69,6 @@ bool caps_word_press_user(uint16_t keycode) {
 
     default:
       return false;
-  }
-}
-
-void caps_word_set_user(bool active) {
-  if (active) {
-    writePinLow(24);
-  } else {
-    writePinHigh(24);
   }
 }
 
@@ -148,7 +169,7 @@ bool tap_shift(keyrecord_t* record)
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-  static bool is_drag_active = false;
+  static bool is_hold_active = false;
 
   if (!process_layer_lock(keycode, record, LLOCK)) {
     return false;
@@ -162,7 +183,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       return true;
 
     case KC_LCLK:
-      is_drag_active = false;
+      is_hold_active = false;
       return true;
 
     case KC_DCLK:
@@ -170,18 +191,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         tap_code16(KC_LCLK);
         wait_ms(50);
         tap_code16(KC_LCLK);
-        is_drag_active = false;
+        is_hold_active = false;
       }
       return false;
 
     case KC_HOLD:
       if (record->event.pressed) {
-        if (is_drag_active) {
+        if (is_hold_active) {
           unregister_code16(KC_LCLK);
-          is_drag_active = false;
+          is_hold_active = false;
         } else {
           register_code16(KC_LCLK);
-          is_drag_active = true;
+          is_hold_active = true;
         }
       }
       return false;
