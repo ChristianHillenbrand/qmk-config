@@ -88,12 +88,16 @@ enum custom_keycodes {
   DE_S_SS,
   DE_E_EURO,
 
+  MT_SFT_BSLS_,
+
   LT_NAV_SFT_ ,
   LT_FUN_SFT_,
 };
 
 #define KC_LCLK KC_BTN1
 #define KC_RCLK KC_BTN2
+
+#define MT_SFT_BSLS MT(MOD_LSFT | MOD_RSFT, DE_BSLS)
 
 #define LT_NAV_SFT LT(L_NAV, LT_NAV_SFT_)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
@@ -126,8 +130,7 @@ static uint16_t fast_hold_keycode = 0;
 static uint16_t fast_tap_hold_timer = 0;
 static bool fast_tap_hold_pressed = false;
 
-bool fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool keep_shift, keyrecord_t* record)
-{
+bool fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool keep_shift, keyrecord_t* record) {
   if (record->event.pressed) {
     // get shift state before tapping to not loose oneshots
     process_caps_word(tap_keycode, record);
@@ -153,17 +156,14 @@ bool fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool keep_shift,
   return false;
 }
 
-bool tap_shift(keyrecord_t* record)
-{
-  if (record->event.pressed) {
-    if (record->tap.count) {
-      if (is_mod_active(get_oneshot_mods(), MOD_MASK_SHIFT)) {
-        del_oneshot_mods(MOD_MASK_SHIFT);
-      } else {
-        add_oneshot_mods(MOD_MASK_SHIFT);
-      }
-      return false;
+bool tap_shift(keyrecord_t* record) {
+  if (record->event.pressed && record->tap.count) {
+    if (is_mod_active(get_oneshot_mods(), MOD_MASK_SHIFT)) {
+      del_oneshot_mods(MOD_MASK_SHIFT);
+    } else {
+      add_oneshot_mods(MOD_MASK_SHIFT);
     }
+    return false;
   }
   return true;
 }
@@ -285,9 +285,6 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case SFT_T(KC_BSLS):
-      return true;
-
     default:
       return false;
   }
@@ -347,7 +344,6 @@ tap_dance_action_t tap_dance_actions[] = {
  *****************/
 
 const key_override_t shift_esc  = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, DE_TILD);
-const key_override_t shift_circ  = ko_make_basic(MOD_MASK_SHIFT, DE_CIRC, DE_TILD);
 const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, DE_QUES);
 const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, DE_LPRN, DE_LABK);
 const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, DE_RPRN, DE_RABK);
@@ -357,7 +353,6 @@ const key_override_t shift_bsls = ko_make_basic(MOD_MASK_SHIFT, DE_BSLS, DE_PIPE
 
 const key_override_t **key_overrides = (const key_override_t *[]){
   &shift_esc,
-  &shift_circ,
   &shift_bspc,
   &shift_lprn,
   &shift_rprn,
@@ -405,7 +400,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          CW_TOGG,         DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         SFT_T(DE_BSLS),  DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
+         KC_LSFT,         DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -421,7 +416,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          CW_TOGG,         DE_A_AE,         DE_R,            DE_S_SS,         DE_T,            DE_G,                                                 DE_M,            DE_N,            DE_E,            DE_I,            DE_O_OE,         DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         SFT_T(DE_BSLS),  DE_Z,            DE_X,            DE_C,            DE_D,            DE_V,            XXXXXXX,            KC_MUTE,         DE_K,            DE_H,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
+         KC_LSFT,         DE_Z,            DE_X,            DE_C,            DE_D,            DE_V,            XXXXXXX,            KC_MUTE,         DE_K,            DE_H,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -464,9 +459,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          _______,         RGB_TOG,         KC_MPLY,         KC_MSTP,         KC_MPRV,         KC_MNXT,                                              RGB_MOD,         RGB_HUI,         RGB_SAI,         RGB_VAI,         RGB_SPI,         _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         DE_CIRC,         DE_7,            DE_8,            DE_9,            DE_QUES,                                              _______,         LLOCK,           TD_MODE,         TD_RESET,        TD_BOOT,         _______,
+         _______,         DE_TILD,         DE_7,            DE_8,            DE_9,            DE_QUES,                                              _______,         LLOCK,           TD_MODE,         TD_RESET,        TD_BOOT,         _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         DE_LBRC,         DE_4,            DE_5,            DE_6,            DE_RBRC,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______,
+         _______,         DE_CIRC,         DE_4,            DE_5,            DE_6,            DE_ACUT,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          _______,         DE_BSLS,         DE_1,            DE_2,            DE_3,            DE_HASH,         _______,            _______,         _______,         KC_LCLK,         KC_RCLK,         KC_DCLK,         KC_HOLD,         _______,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
