@@ -256,9 +256,6 @@ void render_rgb_data(void) {
 }
 
 bool render_central(void) {
-  render_bongocat();
-  return false;
-
   render_logo();
   render_logo_text();
   render_line();
@@ -286,7 +283,7 @@ bool render_peripheral(void) {
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  return OLED_ROTATION_0;
+  return rotation;
 }
 
 bool oled_task_user(void) {
