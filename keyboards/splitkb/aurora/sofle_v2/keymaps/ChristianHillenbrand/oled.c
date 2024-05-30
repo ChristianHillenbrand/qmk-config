@@ -80,14 +80,14 @@ void render_mod_status_shift_ctrl(uint8_t modifiers) {
   static const char PROGMEM shift_on_2[] = {0x8c, 0x8d, 0};
   static const char PROGMEM ctrl_on_2[]  = {0x8e, 0x8f, 0};
 
-  static const char PROGMEM off_off_1[] = {0x01, 0};
-  static const char PROGMEM off_off_2[] = {0x02, 0};
-  static const char PROGMEM on_off_1[]  = {0x03, 0};
-  static const char PROGMEM on_off_2[]  = {0x04, 0};
-  static const char PROGMEM off_on_1[]  = {0x05, 0};
-  static const char PROGMEM off_on_2[]  = {0x06, 0};
-  static const char PROGMEM on_on_1[]   = {0x07, 0};
-  static const char PROGMEM on_on_2[]   = {0x08, 0};
+  static const char PROGMEM off_off_1[] = {0xa0, 0};
+  static const char PROGMEM off_off_2[] = {0xa1, 0};
+  static const char PROGMEM on_off_1[]  = {0xa2, 0};
+  static const char PROGMEM on_off_2[]  = {0xa3, 0};
+  static const char PROGMEM off_on_1[]  = {0xa4, 0};
+  static const char PROGMEM off_on_2[]  = {0xa5, 0};
+  static const char PROGMEM on_on_1[]   = {0xa6, 0};
+  static const char PROGMEM on_on_2[]   = {0xa7, 0};
 
   if(modifiers & MOD_MASK_SHIFT) {
     oled_write_P(shift_on_1, false);
@@ -145,14 +145,14 @@ void render_mod_status_alt_gui(uint8_t modifiers) {
   static const char PROGMEM alt_on_2[] = {0x9c, 0x9d, 0};
   static const char PROGMEM gui_on_2[] = {0x9e, 0x9f, 0};
 
-  static const char PROGMEM off_off_1[] = {0x01, 0};
-  static const char PROGMEM off_off_2[] = {0x02, 0};
-  static const char PROGMEM on_off_1[]  = {0x03, 0};
-  static const char PROGMEM on_off_2[]  = {0x04, 0};
-  static const char PROGMEM off_on_1[]  = {0x05, 0};
-  static const char PROGMEM off_on_2[]  = {0x06, 0};
-  static const char PROGMEM on_on_1[]   = {0x07, 0};
-  static const char PROGMEM on_on_2[]   = {0x08, 0};
+  static const char PROGMEM off_off_1[] = {0xa0, 0};
+  static const char PROGMEM off_off_2[] = {0xa1, 0};
+  static const char PROGMEM on_off_1[]  = {0xa2, 0};
+  static const char PROGMEM on_off_2[]  = {0xa3, 0};
+  static const char PROGMEM off_on_1[]  = {0xa4, 0};
+  static const char PROGMEM off_on_2[]  = {0xa5, 0};
+  static const char PROGMEM on_on_1[]   = {0xa6, 0};
+  static const char PROGMEM on_on_2[]   = {0xa7, 0};
 
   if(modifiers & MOD_MASK_ALT) {
     oled_write_P(alt_on_1, false);
