@@ -6,32 +6,31 @@
 #define FRAME_DURATION 200
 #define FRAME_SIZE 96
 
+#define LUNA_X 0
+#define LUNA_Y 8
+
 uint8_t cur_frame = 0;
 uint32_t frame_timer = 0;
 
-bool is_jumping = false;
+static bool is_jumping(void) {
+  return false;
+}
 
-bool is_barking(void) {
+static bool is_barking(void) {
   return is_caps_word_on();
 }
 
-bool is_sneaking(void) {
+static bool is_sneaking(void) {
   uint8_t mods = get_mods() | get_oneshot_mods();
   return mods & MOD_MASK_CTRL;
 }
 
-bool is_sitting(void) {
+static bool is_sitting(void) {
   return get_current_wpm() < MIN_WALK_SPEED;
 }
 
-bool is_walking(void) {
+static bool is_walking(void) {
   return get_current_wpm() < MIN_RUN_SPEED;
-}
-
-void trigger_jump(void) {
-  if (!is_sitting()) {
-    is_jumping = true;
-  }
 }
 
 static void render_wpm(void) {
@@ -49,7 +48,11 @@ static void render_wpm(void) {
   oled_write_P(PSTR(wpm_str), false);
 }
 
-void render_luna(int LUNA_X, int LUNA_Y) {
+static void render_space(void) {
+  oled_write("     ", false);
+}
+
+void render_luna(void) {
 
   static const char PROGMEM sit[2][FRAME_SIZE] = {
     {
@@ -123,15 +126,14 @@ void render_luna(int LUNA_X, int LUNA_Y) {
 
   void animate_luna(void) {
     // handle jump
-    if (is_jumping) {
-      oled_set_cursor(LUNA_X, LUNA_Y + 2);
-      oled_write("     ", false);
-      oled_set_cursor(LUNA_X, LUNA_Y - 1);
-      is_jumping = false;
+    if (is_jumping()) {
+      oled_set_cursor(LUNA_X, LUNA_Y + 6);
+      render_space();
+      oled_set_cursor(LUNA_X, LUNA_Y + 3);
     } else {
-      oled_set_cursor(LUNA_X, LUNA_Y - 1);
-      oled_write("     ", false);
-      oled_set_cursor(LUNA_X, LUNA_Y);
+      oled_set_cursor(LUNA_X, LUNA_Y + 3);
+      render_space();
+      oled_set_cursor(LUNA_X, LUNA_Y + 4);
     }
 
     // toggle frame
@@ -152,8 +154,7 @@ void render_luna(int LUNA_X, int LUNA_Y) {
 
   oled_set_cursor(LUNA_X, LUNA_Y);
   render_wpm();
-  oled_write("     ", false);
-  LUNA_Y += 4;
+  render_space();
 
   if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
     animate_luna();

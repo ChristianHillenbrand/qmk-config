@@ -3,9 +3,6 @@
 #include "layers.h"
 #include "oled.h"
 
-#include "features/bongocat.h"
-#include "features/luna.h"
-
 #define RGB_TIMEOUT 5000
 
 static uint32_t rgb_timer = 0;
@@ -17,6 +14,7 @@ void show_rgb_status(void) {
 extern void render_space(void);
 extern void render_logo(void);
 extern void render_logo_text(void);
+extern void render_luna(void);
 
 void render_line(void) {
   oled_write_P(PSTR("-----"), false);
@@ -278,7 +276,7 @@ bool render_peripheral(void) {
   render_logo();
   render_logo_text();
   render_line();
-  render_luna(0, 8);
+  render_luna();
   return false;
 }
 
