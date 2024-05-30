@@ -19,7 +19,7 @@ static matrix_row_t prev_matrix[MATRIX_ROWS] = {};
 
 enum bongocat_states { sleep, idle, prep, tap };
 
-void render_wpm(void) {
+static void render_wpm(void) {
   static uint8_t prev_wpm = 0xff;
 
   uint8_t cur_wpm = get_current_wpm();
@@ -36,7 +36,7 @@ void render_wpm(void) {
   prev_wpm = cur_wpm;
 }
 
-bool any_key_pressed(void) {
+static bool any_key_pressed(void) {
   for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
     if (matrix[row] != 0) {
       return true;
@@ -45,7 +45,7 @@ bool any_key_pressed(void) {
   return false;
 }
 
-bool new_key_pressed(void) {
+static bool new_key_pressed(void) {
   bool key_pressed(matrix_row_t matrix[MATRIX_ROWS], uint8_t row, uint8_t col) {
     return (matrix[row] & ((matrix_row_t)1 << col));
   }
@@ -60,13 +60,13 @@ bool new_key_pressed(void) {
   return false;
 }
 
-void save_matrix(void) {
+static void save_matrix(void) {
   for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
     prev_matrix[row] = matrix[row];
   }
 }
 
-uint8_t get_bongocat_state(void) {
+static uint8_t get_bongocat_state(void) {
   static uint8_t bongocat_state = idle;
   static uint32_t idle_timer = 0;
 
@@ -107,7 +107,7 @@ uint8_t get_bongocat_state(void) {
   return bongocat_state;
 }
 
-void render_bongocat_table(void) {
+static void render_bongocat_table(void) {
   static bool table_already_rendered = false;
 
   if (table_already_rendered) {
@@ -124,7 +124,7 @@ void render_bongocat_table(void) {
     else { n++; }
   }
 
-  x = BONGOCAT_X * OLED_FONT_WIDTH + BONGOCAT_COLS - 11;
+  x = BONGOCAT_X * OLED_FONT_WIDTH + BONGOCAT_COLS - 4;
   y = BONGOCAT_Y * OLED_FONT_HEIGHT + 15;
 
   n = 0;
@@ -137,7 +137,7 @@ void render_bongocat_table(void) {
   table_already_rendered = true;
 }
 
-void render_bongocat_frame(const char PROGMEM frame[BONGOCAT_ROWS][BONGOCAT_COLS]) {
+static void render_bongocat_frame(const char PROGMEM frame[BONGOCAT_ROWS][BONGOCAT_COLS]) {
   static const char (*prev_frame)[BONGOCAT_COLS] = 0;
 
   if (frame == prev_frame)
@@ -151,7 +151,7 @@ void render_bongocat_frame(const char PROGMEM frame[BONGOCAT_ROWS][BONGOCAT_COLS
   prev_frame = frame;
 }
 
-void render_bongocat_sleep(void) {
+static void render_bongocat_sleep(void) {
   static const char PROGMEM sleep_frame[BONGOCAT_ROWS][BONGOCAT_COLS] = {
     {0x00, 0x00, 0x00, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x40, 0x40, 0x20, 0x20, 0x20, 0x20, 0x10, 0x10, 0x10, 0x10, 0x08, 0x04, 0x02, 0x01, 0x01, 0x02, 0x0c, 0x30, 0x40, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     {0x00, 0x1e, 0xe1, 0x00, 0x00, 0x01, 0x02, 0x02, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x30, 0x30, 0x00, 0xc0, 0xc1, 0xc1, 0xc2, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00, 0x00, 0x00},
@@ -162,7 +162,7 @@ void render_bongocat_sleep(void) {
   render_bongocat_frame(sleep_frame);
 }
 
-void render_bongocat_idle(void) {
+static void render_bongocat_idle(void) {
   static uint8_t idle_frame = 0;
   static uint32_t frame_timer = 0;
 
@@ -215,7 +215,7 @@ void render_bongocat_idle(void) {
   }
 }
 
-void render_bongocat_prep(void) {
+static void render_bongocat_prep(void) {
   static const char PROGMEM prep_frame[BONGOCAT_ROWS][BONGOCAT_COLS] = {
     {0x00, 0x00, 0x00, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x40, 0x40, 0x20, 0x20, 0x20, 0x20, 0x10, 0x10, 0x10, 0x10, 0x08, 0x04, 0x02, 0x01, 0x01, 0x02, 0x0c, 0x30, 0x40, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     {0x00, 0x1e, 0xe1, 0x00, 0x00, 0x01, 0x02, 0x02, 0x02, 0x81, 0x80, 0x80, 0x00, 0x00, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x30, 0x30, 0x00, 0x00, 0x01, 0xe1, 0x1a, 0x06, 0x09, 0x31, 0x35, 0x01, 0x8a, 0x7c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -226,7 +226,7 @@ void render_bongocat_prep(void) {
   render_bongocat_frame(prep_frame);
 }
 
-void render_bongocat_tap(void) {
+static void render_bongocat_tap(void) {
   static uint8_t tap_frame = 0;
 
   static const char PROGMEM tap_frames[NUM_TAP_FRAMES][BONGOCAT_ROWS][BONGOCAT_COLS] = {
