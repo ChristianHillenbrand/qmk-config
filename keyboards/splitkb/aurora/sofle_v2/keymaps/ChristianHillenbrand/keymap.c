@@ -1,6 +1,7 @@
 #include QMK_KEYBOARD_H
 
 #include "keymap_german.h"
+#include "transactions.h"
 
 #include "features/layer_lock.h"
 
@@ -16,6 +17,20 @@ void keyboard_pre_init_user(void) {
   writePinHigh(24);
 }
 
+void rpc_caps_word_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+  const bool* caps_word_state = (const bool*)(in_data);
+
+  if (*caps_word_state) {
+    caps_word_on();
+  } else {
+    caps_word_off();
+  }
+}
+
+void keyboard_post_init_user(void) {
+  transaction_register_rpc(RPC_CAPS_WORD, rpc_caps_word_slave_handler);
+}
+
 void caps_word_set_user(bool active) {
   if (!is_keyboard_master()) {
     return;
@@ -26,23 +41,8 @@ void caps_word_set_user(bool active) {
   } else {
     writePinHigh(24);
   }
-}
 
-bool led_update_user(led_t led_state) {
-  if (is_keyboard_master()) {
-    return false;
-  }
-
-  static bool caps_state = false;
-  if (led_state.caps_lock && !caps_state) {
-    writePinLow(24);
-    caps_state = true;
-  } else {
-    writePinHigh(24);
-    caps_state = false;
-  }
-
-  return true;
+  transaction_rpc_send(RPC_CAPS_WORD, sizeof(active), &active);
 }
 
 /*************
