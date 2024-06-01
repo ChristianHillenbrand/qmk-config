@@ -8,9 +8,9 @@
 #include "layers.h"
 #include "oled.h"
 
-/*************
- * POWER LED *
- *************/
+/*************************
+ * CAPS WORD / CAPS LOCK *
+ *************************/
 
 void keyboard_pre_init_user(void) {
   setPinOutput(24);
@@ -45,10 +45,6 @@ void caps_word_set_user(bool active) {
   transaction_rpc_send(RPC_CAPS_WORD, sizeof(active), &active);
 }
 
-/*************
- * CAPS WORD *
- *************/
-
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
     case KC_A ... KC_Z:
@@ -69,6 +65,23 @@ bool caps_word_press_user(uint16_t keycode) {
     default:
       return false;
   }
+}
+
+bool led_update_user(led_t led_state) {
+  if (is_keyboard_master()) {
+    return true;
+  }
+
+  static bool caps_lock_state = false;
+  if (led_state.caps_lock && !caps_lock_state) {
+    writePinLow(24);
+    caps_lock_state = true;
+  } else {
+    writePinHigh(24);
+    caps_lock_state = false;
+  }
+
+  return true;
 }
 
 /*******************
