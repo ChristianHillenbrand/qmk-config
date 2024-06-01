@@ -12,6 +12,9 @@ void render_bongocat(void);
 void trigger_jump(void);
 void render_luna(void);
 
+/* timeout */
+bool handle_oled_timeout(void);
+
 /* menus */
 void render_line(void);
 void render_layer(void);

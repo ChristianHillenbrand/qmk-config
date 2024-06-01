@@ -261,9 +261,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     case RGB_SAI:
     case RGB_VAI:
     case RGB_SPI:
-      show_rgb_data();
-      transaction_rpc_send(RPC_SHOW_RGB_DATA, 0, NULL);
-      break;
+      if (record->event.pressed) {
+        show_rgb_data();
+        transaction_rpc_send(RPC_SHOW_RGB_DATA, 0, NULL);
+      }
+      return true;
 
     default:
       if (record->event.pressed) {
@@ -614,6 +616,10 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 }
 
 bool oled_task_user(void) {
+  if (handle_oled_timeout()) {
+    return true;
+  }
+
   if (is_keyboard_left()) {
     return render_left_display();
   } else {

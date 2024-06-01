@@ -3,6 +3,19 @@
 #include "layers.h"
 #include "oled.h"
 
+bool handle_oled_timeout(void) {
+#if OLED_TIMEOUT > 0
+  if (last_input_activity_elapsed() > OLED_TIMEOUT) {
+    oled_off();
+    return true;
+  } else {
+    oled_on();
+    return false;
+  }
+#endif
+  return false;
+}
+
 void render_line(void) {
   static const char PROGMEM line[OLED_DISPLAY_HEIGHT] = {
     0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
