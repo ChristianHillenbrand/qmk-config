@@ -257,4 +257,3 @@ void render_rgb_data(void) {
   oled_write_P(PSTR("S:"), false);
   oled_write_P(PSTR(speed_str), false);
 }
-1
