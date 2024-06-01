@@ -8,6 +8,8 @@
 #include "layers.h"
 #include "oled.h"
 
+void show_rgb_data(void);
+
 /**********
  * STATUS *
  **********/
@@ -27,13 +29,18 @@ void rpc_caps_word_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t
   }
 }
 
-void rpc_space_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+void rpc_space_pressed_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
   trigger_jump();
+}
+
+void rpc_show_rgb_data_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+  show_rgb_data();
 }
 
 void keyboard_post_init_user(void) {
   transaction_register_rpc(RPC_CAPS_WORD, rpc_caps_word_slave_handler);
-  transaction_register_rpc(RPC_SPACE, rpc_space_slave_handler);
+  transaction_register_rpc(RPC_SPACE_PRESSED, rpc_space_pressed_slave_handler);
+  transaction_register_rpc(RPC_SHOW_RGB_DATA, rpc_show_rgb_data_slave_handler);
 }
 
 void caps_word_set_user(bool active) {
@@ -122,8 +129,6 @@ enum custom_keycodes {
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
 #define LT_FUN_SFT LT(L_FUN, LT_FUN_SFT_)
 
-void show_rgb_data(void);
-
 bool is_mod_active(uint8_t mods, uint8_t mask)
 {
   return (mods & mask) != 0;
@@ -200,7 +205,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     case KC_SPC:
       if (record->event.pressed) {
         trigger_jump();
-        transaction_rpc_send(RPC_SPACE, 0, NULL);
+        transaction_rpc_send(RPC_SPACE_PRESSED, 0, NULL);
       }
       return true;
 
@@ -257,6 +262,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     case RGB_VAI:
     case RGB_SPI:
       show_rgb_data();
+      transaction_rpc_send(RPC_SHOW_RGB_DATA, 0, NULL);
       break;
 
     default:
