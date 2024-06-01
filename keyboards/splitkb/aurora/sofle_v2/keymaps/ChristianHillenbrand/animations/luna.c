@@ -1,15 +1,17 @@
 #include QMK_KEYBOARD_H
+#include "oled.h"
 
 #define MIN_WALK_SPEED 10
 #define MIN_RUN_SPEED  40
 
 #define FRAME_DURATION 200
-#define FRAME_SIZE 96
+#define JUMP_DURATION 100
 
 #define LUNA_ROWS 3
 #define LUNA_COLS 32
+#define FRAME_SIZE 96
 
-#define LUNA_ROW 8
+#define LUNA_ROW 12
 #define LUNA_COL 0
 
 uint8_t cur_frame = 0;
@@ -17,7 +19,7 @@ uint32_t frame_timer = 0;
 uint32_t jump_timer = 0;
 
 static bool is_jumping(void) {
-  return (jump_timer && timer_elapsed32(jump_timer) < FRAME_DURATION);
+  return (jump_timer && timer_elapsed32(jump_timer) < JUMP_DURATION);
 }
 
 static bool is_barking(void) {
@@ -35,25 +37,6 @@ static bool is_sitting(void) {
 
 static bool is_walking(void) {
   return get_current_wpm() < MIN_RUN_SPEED;
-}
-
-static void render_wpm(void) {
-  static uint8_t prev_wpm = 0xff;
-
-  uint8_t cur_wpm = get_current_wpm();
-  if (cur_wpm == prev_wpm) {
-    return;
-  }
-
-  char wpm_str[6] = {};
-  sprintf(wpm_str, "  %3d", cur_wpm);
-
-  oled_write_P(PSTR("WPM: "), false);
-  oled_write_P(PSTR(wpm_str), false);
-}
-
-static void render_space(void) {
-  oled_write_P(PSTR("     "), false);
 }
 
 void render_luna(void) {
@@ -130,11 +113,16 @@ void render_luna(void) {
 
   void animate_luna(void) {
     oled_set_cursor(LUNA_COL, LUNA_ROW);
-    render_wpm();
-    render_space();
 
-    uint8_t row = LUNA_ROW + 3;
-    cur_frame = (cur_frame + 1) % 2;
+    if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
+      cur_frame = (cur_frame + 1) % 2;
+
+      if (timer_elapsed32(frame_timer) > 2 * FRAME_DURATION) {
+        frame_timer = timer_read32();
+      } else {
+        frame_timer += FRAME_DURATION;
+      }
+    }
 
     if (is_barking()) {
       render_space();
@@ -146,6 +134,9 @@ void render_luna(void) {
       render_space();
       oled_write_raw_P(sit[cur_frame], FRAME_SIZE);
     } else {
+      if (is_jumping()) {
+
+      }
       const char* frame = NULL;
       if (is_walking()) {
         frame = walk[cur_frame];
@@ -155,7 +146,7 @@ void render_luna(void) {
 
       if (is_jumping()) {
         oled_write_raw_P(frame, FRAME_SIZE);
-        oled_set_cursor(0, row + LUNA_ROWS);
+        oled_set_cursor(0, LUNA_ROWS);
         render_space();
       } else {
         render_space();
@@ -164,15 +155,7 @@ void render_luna(void) {
     }
   }
 
-  if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
-    animate_luna();
-
-    if (timer_elapsed32(frame_timer) > 2 * FRAME_DURATION) {
-      frame_timer = timer_read32();
-    } else {
-      frame_timer += FRAME_DURATION;
-    }
-  }
+  animate_luna();
 }
 
 void jump_luna(void) {

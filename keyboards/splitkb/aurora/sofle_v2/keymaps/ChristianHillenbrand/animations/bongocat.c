@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+#include "oled.h"
 
 #define FRAME_DURATION 100
 
@@ -18,24 +19,6 @@ extern matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t prev_matrix[MATRIX_ROWS] = {};
 
 enum bongocat_states { sleep, idle, prep, tap };
-
-
-static void render_wpm(void) {
-  static uint8_t prev_wpm = 0xff;
-
-  uint8_t cur_wpm = get_current_wpm();
-  if (cur_wpm == prev_wpm) {
-    return;
-  }
-
-  char wpm_str[10] = {};
-  sprintf(wpm_str, "WPM: %-3d", get_current_wpm());
-
-  oled_set_cursor(0, 0);
-  oled_write(PSTR(wpm_str), false);
-
-  prev_wpm = cur_wpm;
-}
 
 static bool any_key_pressed(void) {
   for (uint8_t row = 0; row < MATRIX_ROWS; row++) {

@@ -32,17 +32,17 @@ void keyboard_post_init_user(void) {
 }
 
 void caps_word_set_user(bool active) {
-  if (!is_keyboard_master()) {
-    return;
+  if (is_keyboard_left()) {
+    if (active) {
+      writePinLow(24);
+    } else {
+      writePinHigh(24);
+    }
   }
 
-  if (active) {
-    writePinLow(24);
-  } else {
-    writePinHigh(24);
+  if (is_keyboard_master()) {
+    transaction_rpc_send(RPC_CAPS_WORD, sizeof(active), &active);
   }
-
-  transaction_rpc_send(RPC_CAPS_WORD, sizeof(active), &active);
 }
 
 bool caps_word_press_user(uint16_t keycode) {
@@ -68,7 +68,7 @@ bool caps_word_press_user(uint16_t keycode) {
 }
 
 bool led_update_user(led_t led_state) {
-  if (is_keyboard_master()) {
+  if (is_keyboard_left()) {
     return true;
   }
 
@@ -99,8 +99,6 @@ enum custom_keycodes {
   DE_U_UE,
   DE_S_SS,
   DE_E_EURO,
-
-
 
   LT_NAV_SFT_ ,
   LT_FUN_SFT_,
@@ -233,20 +231,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
     case LT_FUN_SFT:
       return tap_shift(record);
-
-    case RGB_TOG:
-      show_rgb_status();
-      break;
-
-    case RGB_MOD:
-    case RGB_HUI:
-    case RGB_SAI:
-    case RGB_VAI:
-    case RGB_SPI:
-      if (rgb_matrix_is_enabled()) {
-        show_rgb_status();
-      }
-      break;
 
     default:
       if (record->event.pressed) {
@@ -543,4 +527,45 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
   }
 
   return false;
+}
+
+/********
+ * OLED *
+ ********/
+
+static bool render_left(void) {
+  render_logo();
+  render_logo_text();
+  render_line();
+  render_space();
+  render_layer();
+  render_space();
+  render_line();
+  render_mod_status_shift_ctrl(get_mods() | get_oneshot_mods());
+  render_mod_status_alt_gui(get_mods() | get_oneshot_mods());
+  return false;
+}
+
+static bool render_right(void) {
+  render_logo();
+  render_logo_text();
+  render_line();
+  render_space();
+  render_wpm();
+  render_space();
+  render_line();
+  render_luna();
+  return false;
+}
+
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  return rotation;
+}
+
+bool oled_task_user(void) {
+  if (is_keyboard_left()) {
+    return render_left();
+  } else {
+    return render_right();
+  }
 }

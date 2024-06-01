@@ -3,24 +3,11 @@
 #include "layers.h"
 #include "oled.h"
 
-#define RGB_TIMEOUT 5000
-
-static uint32_t rgb_timer = 0;
-
-void show_rgb_status(void) {
-  rgb_timer = timer_read32();
-}
-
-extern void render_space(void);
-extern void render_logo(void);
-extern void render_logo_text(void);
-extern void render_luna(void);
-
 void render_line(void) {
   oled_write_P(PSTR("-----"), false);
 }
 
-void render_default_layer(void) {
+static void render_default_layer(void) {
   switch (get_highest_layer(default_layer_state)) {
     case L_QWRTY:
       oled_write_P(PSTR("QWRTY"), false);
@@ -197,6 +184,22 @@ void render_mod_status_alt_gui(uint8_t modifiers) {
   }
 }
 
+void render_wpm(void) {
+  static uint8_t prev_wpm = 0xff;
+
+  uint8_t cur_wpm = get_current_wpm();
+  if (cur_wpm == prev_wpm) {
+    return;
+  }
+
+  char wpm_str[6] = {};
+  sprintf(wpm_str, "  %03d", cur_wpm);
+
+  oled_write_P(PSTR("WPM: "), false);
+  render_space();
+  oled_write_P(PSTR(wpm_str), false);
+}
+
 struct rgb_data_t {
   bool enable;
   uint8_t mode;
@@ -204,7 +207,7 @@ struct rgb_data_t {
   uint8_t speed;
 };
 
-struct rgb_data_t read_rgb_data(void) {
+static struct rgb_data_t read_rgb_data(void) {
   struct rgb_data_t rgb_data = {
     rgb_matrix_is_enabled(),
     rgb_matrix_get_mode(),
@@ -253,41 +256,3 @@ void render_rgb_data(void) {
   oled_write_P(PSTR(speed_str), false);
 }
 
-bool render_central(void) {
-  render_logo();
-  render_logo_text();
-  render_line();
-
-  if (rgb_timer && timer_elapsed32(rgb_timer) < RGB_TIMEOUT) {
-    render_rgb_data();
-  } else {
-    render_space();
-    render_layer();
-    render_space();
-    render_line();
-    render_mod_status_shift_ctrl(get_mods() | get_oneshot_mods());
-    render_mod_status_alt_gui(get_mods() | get_oneshot_mods());
-  }
-
-  return false;
-}
-
-bool render_peripheral(void) {
-  render_logo();
-  render_logo_text();
-  render_line();
-  render_luna();
-  return false;
-}
-
-oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  return rotation;
-}
-
-bool oled_task_user(void) {
-  if (is_keyboard_master()) {
-    return render_central();
-  } else {
-    return render_peripheral();
-  }
-}
