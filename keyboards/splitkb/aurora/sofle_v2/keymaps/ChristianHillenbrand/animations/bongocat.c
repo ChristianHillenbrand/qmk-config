@@ -91,6 +91,23 @@ static uint8_t get_bongocat_state(void) {
   return bongocat_state;
 }
 
+static void render_bongocat_wpm(void) {
+  static uint8_t prev_wpm = 0xff;
+
+  uint8_t cur_wpm = get_current_wpm();
+  if (cur_wpm == prev_wpm) {
+    return;
+  }
+
+  char wpm_str[4] = {};
+  sprintf(wpm_str, "%-3d", cur_wpm);
+
+  oled_write_P(PSTR("WPM: "), false);
+  oled_write_P(PSTR(wpm_str), false);
+
+  prev_wpm = cur_wpm;
+}
+
 static void render_bongocat_table(void) {
   static bool table_already_rendered = false;
 
@@ -236,7 +253,7 @@ static void render_bongocat_tap(void) {
 }
 
 void render_bongocat(void) {
-  render_wpm();
+  render_bongocat_wpm();
 
   render_bongocat_table();
   switch (get_bongocat_state()) {
