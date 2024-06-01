@@ -8,9 +8,9 @@
 #include "layers.h"
 #include "oled.h"
 
-/*************************
- * CAPS WORD / CAPS LOCK *
- *************************/
+/**********
+ * STATUS *
+ **********/
 
 void keyboard_pre_init_user(void) {
   setPinOutput(24);
@@ -27,8 +27,13 @@ void rpc_caps_word_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t
   }
 }
 
+void rpc_space_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+  trigger_jump();
+}
+
 void keyboard_post_init_user(void) {
   transaction_register_rpc(RPC_CAPS_WORD, rpc_caps_word_slave_handler);
+  transaction_register_rpc(RPC_SPACE, rpc_space_slave_handler);
 }
 
 void caps_word_set_user(bool active) {
@@ -44,6 +49,27 @@ void caps_word_set_user(bool active) {
     transaction_rpc_send(RPC_CAPS_WORD, sizeof(active), &active);
   }
 }
+
+bool led_update_user(led_t led_state) {
+  if (is_keyboard_left()) {
+    return true;
+  }
+
+  static bool caps_lock_state = false;
+  if (led_state.caps_lock && !caps_lock_state) {
+    writePinLow(24);
+    caps_lock_state = true;
+  } else {
+    writePinHigh(24);
+    caps_lock_state = false;
+  }
+
+  return true;
+}
+
+/*************
+ * CAPS WORD *
+ *************/
 
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
@@ -65,23 +91,6 @@ bool caps_word_press_user(uint16_t keycode) {
     default:
       return false;
   }
-}
-
-bool led_update_user(led_t led_state) {
-  if (is_keyboard_left()) {
-    return true;
-  }
-
-  static bool caps_lock_state = false;
-  if (led_state.caps_lock && !caps_lock_state) {
-    writePinLow(24);
-    caps_lock_state = true;
-  } else {
-    writePinHigh(24);
-    caps_lock_state = false;
-  }
-
-  return true;
 }
 
 /*******************
@@ -188,6 +197,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   }
 
   switch (keycode) {
+    case KC_SPC:
+      if (record->event.pressed) {
+        trigger_jump();
+        transaction_rpc_send(RPC_SPACE, 0, NULL);
+      }
+      return true;
+
     case KC_LCLK:
       left_click_hold = false;
       return true;
