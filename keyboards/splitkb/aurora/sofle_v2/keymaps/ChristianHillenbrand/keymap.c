@@ -92,7 +92,7 @@ enum custom_keycodes {
   LLOCK = SAFE_RANGE,
 
   KC_DCLK,
-  KC_HOLD,
+  KC_LCHD,
 
   DE_A_AE,
   DE_O_OE,
@@ -112,6 +112,8 @@ enum custom_keycodes {
 #define LT_NAV_SFT LT(L_NAV, LT_NAV_SFT_)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
 #define LT_FUN_SFT LT(L_FUN, LT_FUN_SFT_)
+
+void show_rgb_data(void);
 
 bool is_mod_active(uint8_t mods, uint8_t mask)
 {
@@ -179,7 +181,7 @@ bool tap_shift(keyrecord_t* record) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-  static bool is_hold_active = false;
+  static bool left_click_hold = false;
 
   if (!process_layer_lock(keycode, record, LLOCK)) {
     return false;
@@ -187,7 +189,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
   switch (keycode) {
     case KC_LCLK:
-      is_hold_active = false;
+      left_click_hold = false;
       return true;
 
     case KC_DCLK:
@@ -195,18 +197,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         tap_code16(KC_LCLK);
         wait_ms(50);
         tap_code16(KC_LCLK);
-        is_hold_active = false;
+        left_click_hold = false;
       }
       return false;
 
-    case KC_HOLD:
+    case KC_LCHD:
       if (record->event.pressed) {
-        if (is_hold_active) {
+        if (left_click_hold) {
           unregister_code16(KC_LCLK);
-          is_hold_active = false;
+          left_click_hold = false;
         } else {
           register_code16(KC_LCLK);
-          is_hold_active = true;
+          left_click_hold = true;
         }
       }
       return false;
@@ -231,6 +233,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
     case LT_FUN_SFT:
       return tap_shift(record);
+
+    case RGB_TOG:
+    case RGB_MOD:
+    case RGB_HUI:
+    case RGB_SAI:
+    case RGB_VAI:
+    case RGB_SPI:
+      show_rgb_data();
+      break;
 
     default:
       if (record->event.pressed) {
@@ -440,7 +451,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          _______,         OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,                                              KC_TAB,          KC_LEFT,         KC_DOWN,         KC_RGHT,         KC_DEL,          _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         KC_HOLD,         KC_DCLK,         KC_RCLK,         KC_LCLK,         _______,         _______,            _______,         C(DE_Z),         C(DE_V),         C(DE_C),         C(DE_X),         C(DE_Y),         _______,
+         _______,         KC_LCHD,         KC_DCLK,         KC_RCLK,         KC_LCLK,         _______,         _______,            _______,         C(DE_Z),         C(DE_V),         C(DE_C),         C(DE_X),         C(DE_Y),         _______,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            _______,         _______,         _______,         TG(L_NAV),       _______,            _______,         _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -456,7 +467,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          _______,         DE_CIRC,         DE_4,            DE_5,            DE_6,            DE_ACUT,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         DE_BSLS,         DE_1,            DE_2,            DE_3,            DE_HASH,         _______,            _______,         _______,         KC_LCLK,         KC_RCLK,         KC_DCLK,         KC_HOLD,         _______,
+         _______,         DE_BSLS,         DE_1,            DE_2,            DE_3,            DE_HASH,         _______,            _______,         _______,         KC_LCLK,         KC_RCLK,         KC_DCLK,         KC_LCHD,         _______,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            _______,         _______,         DE_COMM,         DE_DOT,          DE_0,               TG(L_NUM),       _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -471,7 +482,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          _______,         KC_F11,          KC_F4,           KC_F5,           KC_F6,           _______,                                              _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),   _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         KC_F10,          KC_F1,           KC_F2,           KC_F3,           _______,         _______,            _______,         _______,         KC_LCLK,         KC_RCLK,         KC_DCLK,         KC_HOLD,         _______,
+         _______,         KC_F10,          KC_F1,           KC_F2,           KC_F3,           _______,         _______,            _______,         _______,         KC_LCLK,         KC_RCLK,         KC_DCLK,         KC_LCHD,         _______,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            _______,         _______,         _______,         _______,         _______,            _______,         TG(L_FUN),       _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -533,7 +544,20 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
  * OLED *
  ********/
 
-static bool render_left(void) {
+#define RGB_DATA_TIMEOUT 5000
+uint32_t rgb_data_timer = 0;
+
+void show_rgb_data(void) {
+  rgb_data_timer = timer_read32();
+}
+
+bool rgb_data_visible(void) {
+  return (rgb_data_timer &&
+    timer_elapsed32(rgb_data_timer) < RGB_DATA_TIMEOUT);
+}
+
+bool render_left_display(void) {
+  oled_clear();
   render_logo();
   render_logo_text();
   render_line();
@@ -546,15 +570,20 @@ static bool render_left(void) {
   return false;
 }
 
-static bool render_right(void) {
+bool render_right_display(void) {
+  oled_clear();
   render_logo();
   render_logo_text();
   render_line();
-  render_space();
-  render_wpm();
-  render_space();
-  render_line();
-  render_luna();
+  if (rgb_data_visible()) {
+    render_rgb_data();
+  } else {
+    render_space();
+    render_wpm();
+    render_space();
+    render_line();
+    render_luna();
+  }
   return false;
 }
 
@@ -564,8 +593,8 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 
 bool oled_task_user(void) {
   if (is_keyboard_left()) {
-    return render_left();
+    return render_left_display();
   } else {
-    return render_right();
+    return render_right_display();
   }
 }
