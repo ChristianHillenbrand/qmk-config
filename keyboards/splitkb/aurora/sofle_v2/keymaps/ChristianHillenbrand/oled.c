@@ -192,15 +192,10 @@ void render_mod_status_alt_gui(uint8_t modifiers) {
 }
 
 void render_wpm(void) {
-  static uint8_t prev_wpm = 0xff;
-
-  uint8_t cur_wpm = get_current_wpm();
-  if (cur_wpm == prev_wpm) {
-    return;
-  }
+  uint8_t wpm = get_current_wpm();
 
   char wpm_str[6] = {};
-  sprintf(wpm_str, " %03d ", cur_wpm);
+  sprintf(wpm_str, " %03d ", wpm);
 
   oled_write_P(PSTR(" WPM "), false);
   render_space();

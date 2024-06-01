@@ -9,8 +9,8 @@ extern void render_logo_text(void);
 void render_bongocat(void);
 
 /* luna */
+void trigger_jump(void);
 void render_luna(void);
-void jump_luna(void);
 
 /* menus */
 void render_line(void);
