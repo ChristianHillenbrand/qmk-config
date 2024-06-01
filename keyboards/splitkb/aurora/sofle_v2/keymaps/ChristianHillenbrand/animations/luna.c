@@ -11,9 +11,6 @@
 #define LUNA_COLS 32
 #define FRAME_SIZE 96
 
-#define LUNA_ROW 12
-#define LUNA_COL 0
-
 uint8_t cur_frame = 0;
 uint32_t frame_timer = 0;
 uint32_t jump_timer = 0;
@@ -112,8 +109,6 @@ void render_luna(void) {
   };
 
   void animate_luna(void) {
-    oled_set_cursor(LUNA_COL, LUNA_ROW);
-
     if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
       cur_frame = (cur_frame + 1) % 2;
 
@@ -153,6 +148,10 @@ void render_luna(void) {
         oled_write_raw_P(frame, FRAME_SIZE);
       }
     }
+
+    oled_advance_page(false);
+    oled_advance_page(false);
+    oled_advance_page(false);
   }
 
   animate_luna();

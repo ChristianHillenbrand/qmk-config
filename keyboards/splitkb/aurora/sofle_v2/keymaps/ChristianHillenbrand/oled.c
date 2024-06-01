@@ -4,7 +4,14 @@
 #include "oled.h"
 
 void render_line(void) {
-  oled_write_P(PSTR("-----"), false);
+  static const char PROGMEM line[OLED_DISPLAY_HEIGHT] = {
+    0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+    0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+    0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+    0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08
+  };
+  oled_write_raw_P(line, OLED_DISPLAY_HEIGHT);
+  oled_advance_page(false);
 }
 
 static void render_default_layer(void) {
@@ -193,9 +200,9 @@ void render_wpm(void) {
   }
 
   char wpm_str[6] = {};
-  sprintf(wpm_str, "  %03d", cur_wpm);
+  sprintf(wpm_str, " %03d ", cur_wpm);
 
-  oled_write_P(PSTR("WPM: "), false);
+  oled_write_P(PSTR(" WPM "), false);
   render_space();
   oled_write_P(PSTR(wpm_str), false);
 }
