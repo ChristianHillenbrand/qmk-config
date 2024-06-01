@@ -11,8 +11,8 @@
 #define BONGOCAT_ROWS 4
 #define BONGOCAT_COLS 47
 
-#define BONGOCAT_X 9
-#define BONGOCAT_Y 0
+#define BONGOCAT_ROW 9
+#define BONGOCAT_COL 0
 
 extern matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t prev_matrix[MATRIX_ROWS] = {};
@@ -115,8 +115,8 @@ static void render_bongocat_table(void) {
     return;
   }
 
-  uint8_t x = BONGOCAT_X * OLED_FONT_WIDTH - 1;
-  uint8_t y = BONGOCAT_Y * OLED_FONT_HEIGHT + 26;
+  uint8_t x = BONGOCAT_ROW * OLED_FONT_WIDTH - 1;
+  uint8_t y = BONGOCAT_COL * OLED_FONT_HEIGHT + 26;
 
   uint8_t n = 0;
   for (; x > 0; x--) {
@@ -125,8 +125,8 @@ static void render_bongocat_table(void) {
     else { n++; }
   }
 
-  x = BONGOCAT_X * OLED_FONT_WIDTH + BONGOCAT_COLS;
-  y = BONGOCAT_Y * OLED_FONT_HEIGHT + 14;
+  x = BONGOCAT_ROW * OLED_FONT_WIDTH + BONGOCAT_COLS;
+  y = BONGOCAT_COL * OLED_FONT_HEIGHT + 14;
 
   n = 0;
   for (; x < OLED_DISPLAY_WIDTH; x++) {
@@ -145,7 +145,7 @@ static void render_bongocat_frame(const char PROGMEM frame[BONGOCAT_ROWS][BONGOC
     return;
 
   for (uint8_t i = 0; i < BONGOCAT_ROWS; i++) {
-    oled_set_cursor(BONGOCAT_X, BONGOCAT_Y + i);
+    oled_set_cursor(BONGOCAT_ROW, BONGOCAT_COL + i);
     oled_write_raw_P(frame[i], BONGOCAT_COLS);
   }
 

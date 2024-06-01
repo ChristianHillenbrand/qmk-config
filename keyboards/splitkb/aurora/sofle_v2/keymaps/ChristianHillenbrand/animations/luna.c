@@ -6,14 +6,18 @@
 #define FRAME_DURATION 200
 #define FRAME_SIZE 96
 
-#define LUNA_X 0
-#define LUNA_Y 8
+#define LUNA_ROWS 3
+#define LUNA_COLS 32
+
+#define LUNA_ROW 8
+#define LUNA_COL 0
 
 uint8_t cur_frame = 0;
 uint32_t frame_timer = 0;
+uint32_t jump_timer = 0;
 
 static bool is_jumping(void) {
-  return false;
+  return (jump_timer && timer_elapsed32(jump_timer) < FRAME_DURATION);
 }
 
 static bool is_barking(void) {
@@ -49,7 +53,7 @@ static void render_wpm(void) {
 }
 
 static void render_space(void) {
-  oled_write("     ", false);
+  oled_write_P(PSTR("     "), false);
 }
 
 void render_luna(void) {
@@ -125,36 +129,40 @@ void render_luna(void) {
   };
 
   void animate_luna(void) {
-    // handle jump
-    if (is_jumping()) {
-      oled_set_cursor(LUNA_X, LUNA_Y + 6);
-      render_space();
-      oled_set_cursor(LUNA_X, LUNA_Y + 3);
-    } else {
-      oled_set_cursor(LUNA_X, LUNA_Y + 3);
-      render_space();
-      oled_set_cursor(LUNA_X, LUNA_Y + 4);
-    }
+    oled_set_cursor(LUNA_COL, LUNA_ROW);
+    render_wpm();
+    render_space();
 
-    // toggle frame
+    uint8_t row = LUNA_ROW + 3;
     cur_frame = (cur_frame + 1) % 2;
 
     if (is_barking()) {
+      render_space();
       oled_write_raw_P(bark[cur_frame], FRAME_SIZE);
     } else if (is_sneaking()) {
+      render_space();
       oled_write_raw_P(sneak[cur_frame], FRAME_SIZE);
     } else if (is_sitting()) {
+      render_space();
       oled_write_raw_P(sit[cur_frame], FRAME_SIZE);
-    } else if (is_walking()) {
-      oled_write_raw_P(walk[cur_frame], FRAME_SIZE);
     } else {
-      oled_write_raw_P(run[cur_frame], FRAME_SIZE);
+      const char* frame = NULL;
+      if (is_walking()) {
+        frame = walk[cur_frame];
+      } else {
+        frame = run[cur_frame];
+      }
+
+      if (is_jumping()) {
+        oled_write_raw_P(frame, FRAME_SIZE);
+        oled_set_cursor(0, row + LUNA_ROWS);
+        render_space();
+      } else {
+        render_space();
+        oled_write_raw_P(frame, FRAME_SIZE);
+      }
     }
   }
-
-  oled_set_cursor(LUNA_X, LUNA_Y);
-  render_wpm();
-  render_space();
 
   if (timer_elapsed32(frame_timer) > FRAME_DURATION) {
     animate_luna();
@@ -164,5 +172,11 @@ void render_luna(void) {
     } else {
       frame_timer += FRAME_DURATION;
     }
+  }
+}
+
+void jump_luna(void) {
+  if (!is_jumping()) {
+    jump_timer = timer_read32();
   }
 }
