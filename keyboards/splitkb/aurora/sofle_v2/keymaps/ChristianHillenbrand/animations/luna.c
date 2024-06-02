@@ -17,8 +17,13 @@ uint32_t jump_timer = 0;
 
 enum luna_states {barking, sitting, sneaking, walking, running};
 
+static bool is_caps_lock_on(void) {
+  led_t led_state = host_keyboard_led_state();
+  return led_state.caps_lock;
+}
+
 static uint8_t get_luna_state(void) {
-  if (is_caps_word_on()) {
+  if (is_caps_word_on() || is_caps_lock_on()) {
     return barking;
   }
 

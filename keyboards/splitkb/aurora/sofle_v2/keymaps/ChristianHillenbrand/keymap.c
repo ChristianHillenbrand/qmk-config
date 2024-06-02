@@ -74,32 +74,6 @@ bool led_update_user(led_t led_state) {
   return true;
 }
 
-/*************
- * CAPS WORD *
- *************/
-
-bool caps_word_press_user(uint16_t keycode) {
-  switch (keycode) {
-    case KC_A ... KC_Z:
-    case DE_ADIA:
-    case DE_ODIA:
-    case DE_UDIA:
-    case DE_MINS:
-      add_weak_mods(MOD_BIT(KC_LSFT));
-      return true;
-
-    case CW_TOGG:
-    case DE_1 ... DE_0:
-    case DE_UNDS:
-    case KC_BSPC:
-    case KC_DEL:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
 /*******************
  * CUSTOM KEYCODES *
  *******************/
@@ -292,32 +266,6 @@ void matrix_scan_user(void) {
   }
 }
 
-/*********************
- * TAP HOLD SETTINGS *
- *********************/
-
-bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case LT_NAV_SFT:
-    case LT_NUM_ENT:
-    case LT_FUN_SFT:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
-bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case SFT_T(DE_LABK):
-      return true;
-
-    default:
-      return false;
-  }
-}
-
 /**************
  * TAP DANCES *
  **************/
@@ -351,21 +299,32 @@ void td_fn_mode(tap_dance_state_t *state, void *user_date) {
   }
 }
 
+void td_fn_caps(tap_dance_state_t *state, void *user_date) {
+  if (state->count == 1) {
+    caps_word_toggle();
+  } else if(state->count == 2) {
+    tap_code(KC_CAPS);
+  }
+}
+
 enum tap_dances{
   TD_BOOT_ = 0,
   TD_RESET_,
-  TD_MODE_
+  TD_MODE_,
+  TD_CAPS_
 };
 
 tap_dance_action_t tap_dance_actions[] = {
   [TD_BOOT_] = ACTION_TAP_DANCE_FN(td_fn_boot),
   [TD_RESET_] = ACTION_TAP_DANCE_FN(td_fn_reset),
   [TD_MODE_] = ACTION_TAP_DANCE_FN(td_fn_mode),
+  [TD_CAPS_] = ACTION_TAP_DANCE_FN(td_fn_caps),
 };
 
 #define TD_BOOT TD(TD_BOOT_)
 #define TD_RESET TD(TD_RESET_)
 #define TD_MODE TD(TD_MODE_)
+#define TD_CAPS TD(TD_CAPS_)
 
 /*****************
  * KEY OVERRIDES *
@@ -413,6 +372,58 @@ uint8_t combo_ref_from_layer(uint8_t layer){
   }
 }
 
+/**********************
+ * CAPS WORD SETTINGS *
+ **********************/
+
+bool caps_word_press_user(uint16_t keycode) {
+  switch (keycode) {
+    case KC_A ... KC_Z:
+    case DE_ADIA:
+    case DE_ODIA:
+    case DE_UDIA:
+    case DE_MINS:
+      add_weak_mods(MOD_BIT(KC_LSFT));
+      return true;
+
+    case TD_CAPS:
+    case DE_1 ... DE_0:
+    case DE_UNDS:
+    case KC_BSPC:
+    case KC_DEL:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+/*********************
+ * TAP HOLD SETTINGS *
+ *********************/
+
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case LT_NAV_SFT:
+    case LT_NUM_ENT:
+    case LT_FUN_SFT:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case SFT_T(DE_LABK):
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 /**********
  * KEYMAP *
  **********/
@@ -426,7 +437,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          KC_TAB,          DE_Q,            DE_W,            DE_E_EURO,       DE_R,            DE_T,                                                 DE_Z,            DE_U_UE,         DE_I,            DE_O_OE,         DE_P,            KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         CW_TOGG,         DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH,
+         TD_CAPS,         DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          SFT_T(DE_LABK),  DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
@@ -442,7 +453,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          KC_TAB,          DE_Q,            DE_W,            DE_F,            DE_P,            DE_B,                                                 DE_J,            DE_L,            DE_U_UE,         DE_Y,            DE_PLUS,         KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         CW_TOGG,         DE_A_AE,         DE_R,            DE_S_SS,         DE_T,            DE_G,                                                 DE_M,            DE_N,            DE_E,            DE_I,            DE_O_OE,         DE_HASH,
+         TD_CAPS,         DE_A_AE,         DE_R,            DE_S_SS,         DE_T,            DE_G,                                                 DE_M,            DE_N,            DE_E,            DE_I,            DE_O_OE,         DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          SFT_T(DE_LABK),  DE_Z,            DE_X,            DE_C,            DE_D,            DE_V,            XXXXXXX,            KC_MUTE,         DE_K,            DE_H,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
