@@ -628,7 +628,7 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 
 bool oled_task_user(void) {
   if (handle_oled_timeout()) {
-    return true;
+    return false;
   }
 
   if (is_keyboard_left()) {
