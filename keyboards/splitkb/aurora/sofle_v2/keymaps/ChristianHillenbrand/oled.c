@@ -68,6 +68,10 @@ void render_layer(void) {
       oled_write_P(PSTR(" FUN "), false);
       break;
 
+    case L_ADJ:
+      oled_write_P(PSTR(" ADJ "), false);
+      break;
+
     default:
       oled_write_P(PSTR("?????"), false);
       break;
