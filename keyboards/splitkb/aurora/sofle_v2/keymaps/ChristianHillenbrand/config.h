@@ -58,8 +58,7 @@
 #define OLED_FONT_H "keyboards/splitkb/aurora/sofle_v2/keymaps/ChristianHillenbrand/glcdfont.c"
 #define OLED_TIMEOUT 300000
 
-#define PERMISSIVE_HOLD_PER_KEY
-#define HOLD_ON_OTHER_KEY_PRESS_PER_KEY
+#define PERMISSIVE_HOLD
 
 #define RGB_MATRIX_SLEEP
 #define RGB_MATRIX_TIMEOUT 300000
