@@ -183,26 +183,20 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
-const uint16_t PROGMEM ae_combo[] = {DE_W, DE_E, COMBO_END};
-const uint16_t PROGMEM oe_combo[] = {DE_E, DE_R, COMBO_END};
-const uint16_t PROGMEM ue_combo[] = {DE_U, DE_I, COMBO_END};
-const uint16_t PROGMEM ss_combo[] = {DE_I, DE_O, COMBO_END};
-
-const uint16_t PROGMEM lbrc_combo[] = {DE_S, DE_D, COMBO_END};
-const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
-const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
-const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
+const uint16_t PROGMEM adia_combo[] = {DE_A, DE_S, COMBO_END};
+const uint16_t PROGMEM odia_combo[] = {DE_I, DE_O, COMBO_END};
+const uint16_t PROGMEM udia_combo[] = {DE_U, DE_I, COMBO_END};
+const uint16_t PROGMEM ss_combo[] = {DE_S, DE_D, COMBO_END};
+const uint16_t PROGMEM at_combo[] = {DE_Q, DE_W, COMBO_END};
+const uint16_t PROGMEM euro_combo[] = {DE_W, DE_E, COMBO_END};
 
 combo_t key_combos[] = {
-  COMBO(ae_combo, DE_ADIA),
-  COMBO(oe_combo, DE_ODIA),
-  COMBO(ue_combo, DE_UDIA),
+  COMBO(adia_combo, DE_ADIA),
+  COMBO(odia_combo, DE_ODIA),
+  COMBO(udia_combo, DE_UDIA),
   COMBO(ss_combo, DE_SS),
-
-  COMBO(lbrc_combo, DE_LBRC),
-  COMBO(lprn_combo, DE_LPRN),
-  COMBO(rprn_combo, DE_RPRN),
-  COMBO(rbrc_combo, DE_RBRC)
+  COMBO(at_combo, DE_AT),
+  COMBO(euro_combo, DE_EURO),
 };
 
 uint8_t combo_ref_from_layer(uint8_t layer){
@@ -253,7 +247,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          CW_TOGG,         DE_A,            DE_S,            DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         OSM(MOD_LSFT),   DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         OSM(MOD_RSFT),
+         SFT_T(DE_LABK),  DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
@@ -269,7 +263,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          CW_TOGG,         DE_A,            DE_R,            DE_S,            DE_T,            DE_G,                                                 DE_M,            DE_N,            DE_E,            DE_I,            DE_O,            DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         OSM(MOD_LSFT),   DE_Z,            DE_X,            DE_C,            DE_D,            DE_V,            XXXXXXX,            KC_MUTE,         DE_K,            DE_H,            DE_COMM,         DE_DOT,          DE_MINS,         OSM(MOD_RSFT),
+         SFT_T(DE_LABK),  DE_Z,            DE_X,            DE_C,            DE_D,            DE_V,            XXXXXXX,            KC_MUTE,         DE_K,            DE_H,            DE_COMM,         DE_DOT,          DE_MINS,         KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
