@@ -92,74 +92,13 @@ enum custom_keycodes {
   KC_QWRTY,
   KC_COLMK,
 
-  DE_A_AE,
-  DE_O_OE,
-  DE_U_UE,
-  DE_S_SS,
-  DE_E_EURO,
-
   LT_NAV_SFT_ ,
   LT_FUN_SFT_,
 };
 
-#define MT_SFT_BSLS MT(MOD_LSFT | MOD_RSFT, DE_BSLS)
-
 #define LT_NAV_SFT LT(L_NAV, LT_NAV_SFT_)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
 #define LT_FUN_SFT LT(L_FUN, LT_FUN_SFT_)
-
-bool is_mod_active(uint8_t mods, uint8_t mask)
-{
-  return (mods & mask) != 0;
-}
-
-bool is_mod_inactive(uint8_t mods, uint8_t mask)
-{
-  return (mods & mask) == 0;
-}
-
-bool is_shift_active(void)
-{
-  uint8_t mods = get_mods() | get_oneshot_mods() | get_weak_mods();
-  return is_mod_active(mods, MOD_MASK_SHIFT);
-}
-
-bool is_only_shift_active(void)
-{
-  uint8_t mods = get_mods() | get_oneshot_mods() | get_weak_mods();
-  return is_mod_inactive(mods, ~MOD_MASK_SHIFT);
-}
-
-static uint16_t fast_tap_keycode = 0;
-static uint16_t fast_hold_keycode = 0;
-static uint16_t fast_tap_hold_timer = 0;
-static bool fast_tap_hold_pressed = false;
-
-bool fast_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, bool keep_shift, keyrecord_t* record) {
-  if (record->event.pressed) {
-    // get shift state before tapping to not loose oneshots
-    process_caps_word(tap_keycode, record);
-    bool shift_active = is_shift_active();
-
-    tap_code16(tap_keycode);
-    fast_tap_keycode = tap_keycode;
-
-    if (is_only_shift_active()) {
-      if (shift_active && keep_shift) {
-        fast_hold_keycode = S(hold_keycode);
-      } else {
-        fast_hold_keycode = hold_keycode;
-      }
-
-      fast_tap_hold_timer = record->event.time + TAPPING_TERM;
-      fast_tap_hold_pressed = true;
-    }
-  } else if (tap_keycode == fast_tap_keycode) {
-    fast_tap_hold_pressed = false;
-  }
-
-  return false;
-}
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   if (!process_layer_lock(keycode, record, LLOCK)) {
@@ -186,25 +125,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       }
       return false;
 
-    case DE_A_AE:
-      return fast_tap_hold(DE_A, DE_ADIA, true, record);
-
-    case DE_O_OE:
-      return fast_tap_hold(DE_O, DE_ODIA, true, record);
-
-    case DE_U_UE:
-      return fast_tap_hold(DE_U, DE_UDIA, true, record);
-
-    case DE_S_SS:
-      return fast_tap_hold(DE_S, DE_SS, false, record);
-
-    case DE_E_EURO:
-      return fast_tap_hold(DE_E, DE_EURO, false, record);
-
     case LT_NAV_SFT:
     case LT_FUN_SFT:
       if (record->event.pressed && record->tap.count) {
-        if (is_mod_active(get_oneshot_mods(), MOD_MASK_SHIFT)) {
+        if (get_oneshot_mods() & MOD_MASK_SHIFT) {
           del_oneshot_mods(MOD_MASK_SHIFT);
         } else {
           add_oneshot_mods(MOD_MASK_SHIFT);
@@ -226,28 +150,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       return true;
 
     default:
-      if (record->event.pressed) {
-        fast_tap_hold_pressed = false;
-      }
       break;
   }
 
   return true;
-}
-
-void matrix_scan_user(void) {
-  if (fast_tap_hold_pressed && timer_expired(timer_read(), fast_tap_hold_timer)) {
-    // make sure we really get the case we wanted
-    clear_weak_mods();
-    uint8_t mods = get_mods();
-    unregister_mods(mods);
-
-    tap_code16(KC_BSPC);
-    tap_code16(fast_hold_keycode);
-    fast_tap_hold_pressed = false;
-
-    register_mods(mods);
-  }
 }
 
 /*****************
@@ -277,12 +183,22 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
-const uint16_t PROGMEM lbrc_combo[] = {DE_S_SS, DE_D, COMBO_END};
+const uint16_t PROGMEM ae_combo[] = {DE_W, DE_E, COMBO_END};
+const uint16_t PROGMEM oe_combo[] = {DE_E, DE_R, COMBO_END};
+const uint16_t PROGMEM ue_combo[] = {DE_U, DE_I, COMBO_END};
+const uint16_t PROGMEM ss_combo[] = {DE_I, DE_O, COMBO_END};
+
+const uint16_t PROGMEM lbrc_combo[] = {DE_S, DE_D, COMBO_END};
 const uint16_t PROGMEM lprn_combo[] = {DE_D, DE_F, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {DE_J, DE_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {DE_K, DE_L, COMBO_END};
 
 combo_t key_combos[] = {
+  COMBO(ae_combo, DE_ADIA),
+  COMBO(oe_combo, DE_ODIA),
+  COMBO(ue_combo, DE_UDIA),
+  COMBO(ss_combo, DE_SS),
+
   COMBO(lbrc_combo, DE_LBRC),
   COMBO(lprn_combo, DE_LPRN),
   COMBO(rprn_combo, DE_RPRN),
@@ -333,9 +249,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          KC_ESC,          DE_1,            DE_2,            DE_3,            DE_4,            DE_5,                                                 DE_6,            DE_7,            DE_8,            DE_9,            DE_0,            KC_BSPC,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         KC_TAB,          DE_Q,            DE_W,            DE_E_EURO,       DE_R,            DE_T,                                                 DE_Z,            DE_U_UE,         DE_I,            DE_O_OE,         DE_P,            KC_DEL,
+         KC_TAB,          DE_Q,            DE_W,            DE_E,            DE_R,            DE_T,                                                 DE_Z,            DE_U,            DE_I,            DE_O,            DE_P,            KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         CW_TOGG,         DE_A_AE,         DE_S_SS,         DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH,
+         CW_TOGG,         DE_A,            DE_S,            DE_D,            DE_F,            DE_G,                                                 DE_H,            DE_J,            DE_K,            DE_L,            DE_PLUS,         DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          OSM(MOD_LSFT),   DE_Y,            DE_X,            DE_C,            DE_V,            DE_B,            XXXXXXX,            KC_MUTE,         DE_N,            DE_M,            DE_COMM,         DE_DOT,          DE_MINS,         OSM(MOD_RSFT),
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
@@ -349,29 +265,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
          KC_ESC,          DE_1,            DE_2,            DE_3,            DE_4,            DE_5,                                                 DE_6,            DE_7,            DE_8,            DE_9,            DE_0,            KC_BSPC,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         KC_TAB,          DE_Q,            DE_W,            DE_F,            DE_P,            DE_B,                                                 DE_J,            DE_L,            DE_U_UE,         DE_Y,            DE_PLUS,         KC_DEL,
+         KC_TAB,          DE_Q,            DE_W,            DE_F,            DE_P,            DE_B,                                                 DE_J,            DE_L,            DE_U,            DE_Y,            DE_PLUS,         KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         CW_TOGG,         DE_A_AE,         DE_R,            DE_S_SS,         DE_T,            DE_G,                                                 DE_M,            DE_N,            DE_E,            DE_I,            DE_O_OE,         DE_HASH,
+         CW_TOGG,         DE_A,            DE_R,            DE_S,            DE_T,            DE_G,                                                 DE_M,            DE_N,            DE_E,            DE_I,            DE_O,            DE_HASH,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          OSM(MOD_LSFT),   DE_Z,            DE_X,            DE_C,            DE_D,            DE_V,            XXXXXXX,            KC_MUTE,         DE_K,            DE_H,            DE_COMM,         DE_DOT,          DE_MINS,         OSM(MOD_RSFT),
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
                                            KC_LGUI,         KC_LALT,         KC_LCTL,         LT_NAV_SFT,      KC_SPC,             LT_NUM_ENT,      LT_FUN_SFT,      KC_RCTL,         KC_LALT,         KC_RGUI
-    //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
-
-  ),
-
-  [L_GER] = LAYOUT(
-
-    // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         _______,         _______,         _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         DE_SS,
-    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         LLOCK,           _______,         _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         DE_UDIA,
-    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,                                              _______,         _______,         _______,         _______,         DE_ODIA,         DE_ADIA,
-    // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         _______,         _______,         _______,         _______,         _______,         _______,            _______,         _______,         _______,         _______,         _______,         _______,         _______,
-    // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           _______,         _______,         TG(L_GER),       _______,         _______,            _______,         _______,         _______,         _______,         _______
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
