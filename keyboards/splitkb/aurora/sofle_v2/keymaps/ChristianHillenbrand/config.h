@@ -3,7 +3,7 @@
 
 #pragma once
 
-#define COMBO_TERM 20
+#define COMBO_TERM 25
 
 #define ENABLE_RGB_MATRIX_ALPHAS_MODS
 #define ENABLE_RGB_MATRIX_GRADIENT_UP_DOWN

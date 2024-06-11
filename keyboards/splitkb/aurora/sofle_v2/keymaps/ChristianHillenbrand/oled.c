@@ -52,6 +52,10 @@ void render_layer(void) {
       render_default_layer();
       break;
 
+    case L_GER:
+      oled_write_P(PSTR(" GER "), false);
+      break;
+
     case L_NAV:
       oled_write_P(PSTR(" NAV "), false);
       break;
