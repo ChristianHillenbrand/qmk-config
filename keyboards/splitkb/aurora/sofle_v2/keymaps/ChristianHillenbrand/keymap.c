@@ -175,22 +175,12 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
-const uint16_t PROGMEM esc_combo[] = {US_Z, US_U, COMBO_END};
-const uint16_t PROGMEM tab_combo[] = {US_H, US_J, COMBO_END};
-const uint16_t PROGMEM bspc_combo[] = {US_O, US_P, COMBO_END};
-const uint16_t PROGMEM del_combo[] = {US_L, US_SCLN, COMBO_END};
-
 const uint16_t PROGMEM lbrc_combo[] = {US_S, US_D, COMBO_END};
 const uint16_t PROGMEM lprn_combo[] = {US_D, US_F, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {US_J, US_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {US_K, US_L, COMBO_END};
 
 combo_t key_combos[] = {
-  COMBO(esc_combo, KC_ESC),
-  COMBO(tab_combo, KC_TAB),
-  COMBO(bspc_combo, KC_BSPC),
-  COMBO(del_combo, KC_DEL),
-
   COMBO(lbrc_combo, US_LBRC),
   COMBO(lprn_combo, US_LPRN),
   COMBO(rprn_combo, US_RPRN),
@@ -239,9 +229,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [L_QWRTY] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         US_1,            US_2,            US_3,            US_4,            US_5,            US_6,                                                 US_7,            US_8,            US_9,            US_0,            US_MINS,         US_EQL,
+         KC_ESC,          US_1,            US_2,            US_3,            US_4,            US_5,                                                 US_6,            US_7,            US_8,            US_9,            US_0,            KC_BSPC,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         KC_ESC,          US_Q,            US_W,            US_E,            US_R,            US_T,                                                 US_Z,            US_U,            US_I,            US_O,            US_P,            KC_BSLS,
+         KC_TAB,          US_Q,            US_W,            US_E,            US_R,            US_T,                                                 US_Z,            US_U,            US_I,            US_O,            US_P,            KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          CW_TOGG,         US_A,            US_S,            US_D,            US_F,            US_G,                                                 US_H,            US_J,            US_K,            US_L,            US_SCLN,         US_QUOT,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
@@ -255,9 +245,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [L_COLMK] = LAYOUT(
 
     // ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮                                    ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮
-         US_1,            US_2,            US_3,            US_4,            US_5,            US_6,                                                 US_7,            US_8,            US_9,            US_0,            US_MINS,         US_EQL,
+         KC_ESC,          US_1,            US_2,            US_3,            US_4,            US_5,                                                 US_6,            US_7,            US_8,            US_9,            US_0,            KC_BSPC,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         KC_ESC,          US_Q,            US_W,            US_F,            US_P,            US_B,                                                 US_J,            US_L,            US_U,            US_Z,            US_SCLN,         KC_BSLS,
+         KC_TAB,          US_Q,            US_W,            US_F,            US_P,            US_B,                                                 US_J,            US_L,            US_U,            US_Z,            US_SCLN,         KC_DEL,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          CW_TOGG,         US_A,            US_R,            US_S,            US_T,            US_G,                                                 US_M,            US_N,            US_E,            US_I,            US_O,            US_QUOT,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
