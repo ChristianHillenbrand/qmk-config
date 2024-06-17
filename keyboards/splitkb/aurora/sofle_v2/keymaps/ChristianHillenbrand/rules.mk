@@ -2,6 +2,7 @@ CONVERT_TO = liatris
 
 SRC += animations/bongocat.c \
        animations/luna.c     \
+	   features/achordion.c  \
 	   features/layer_lock.c \
 	   oled.c
 
