@@ -5,8 +5,8 @@ enum layers {
   L_COLMK,
   L_GER,
   L_NAV,
+  L_MEDIA,
   L_NUM,
   L_FUN,
-  L_ADJ,
   L_MOUSE
 };
