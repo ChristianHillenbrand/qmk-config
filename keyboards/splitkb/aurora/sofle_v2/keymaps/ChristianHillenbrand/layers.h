@@ -7,5 +7,6 @@ enum layers {
   L_NAV,
   L_NUM,
   L_FUN,
-  L_ADJ
+  L_ADJ,
+  L_MOUSE
 };
