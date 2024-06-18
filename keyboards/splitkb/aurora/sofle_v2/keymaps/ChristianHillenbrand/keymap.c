@@ -108,6 +108,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
             add_oneshot_mods(MOD_BIT_LSFT);
           }
         }
+        return false;
       } else{
         // hold -> different layers depending on tap
         static uint8_t layer = 0;
@@ -118,8 +119,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         } else {
           layer_off(layer);
         }
+        return true;
       }
-      return false;
 
     case KC_RAISE:
       if (record->tap.count) {
@@ -131,15 +132,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
             add_oneshot_mods(MOD_BIT_RSFT);
           }
         }
+        return false;
       } else {
         // hold -> fun layer
         if (record->event.pressed) {
+          del_oneshot_mods(MOD_BIT_RSFT);
           layer_on(L_FUN);
         } else {
           layer_off(L_FUN);
         }
+        return true;
       }
-      return false;
 
     default:
       break;
