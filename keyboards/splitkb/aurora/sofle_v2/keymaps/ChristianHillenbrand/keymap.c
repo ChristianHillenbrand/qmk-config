@@ -248,10 +248,27 @@ uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
 bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record, uint16_t other_keycode, keyrecord_t* other_record) {
   switch (tap_hold_keycode) {
     case LT_GER_Y:
-      return (other_keycode == US_U || other_keycode == US_O);
+      switch (other_keycode) {
+        case US_F:
+        case US_O:
+        case US_U:
+          return true;
+
+        default:
+          return false;
+      }
 
     case LT_GER_SLSH:
-      return (other_keycode == US_A || other_keycode == US_S || other_keycode == US_E);
+      switch (other_keycode) {
+        case US_A:
+        case US_E:
+        case US_J:
+        case US_S:
+          return true;
+
+        default:
+          return false;
+      }
 
     default:
       return true;
