@@ -10,8 +10,6 @@
 #include "layers.h"
 #include "oled.h"
 
-void show_rgb_data(void);
-
 /**********
  * STATUS *
  **********/
@@ -35,14 +33,9 @@ void rpc_space_pressed_slave_handler(uint8_t in_buflen, const void* in_data, uin
   trigger_jump();
 }
 
-void rpc_show_rgb_data_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
-  show_rgb_data();
-}
-
 void keyboard_post_init_user(void) {
   transaction_register_rpc(RPC_CAPS_WORD, rpc_caps_word_slave_handler);
   transaction_register_rpc(RPC_SPACE_PRESSED, rpc_space_pressed_slave_handler);
-  transaction_register_rpc(RPC_SHOW_RGB_DATA, rpc_show_rgb_data_slave_handler);
 }
 
 void caps_word_set_user(bool active) {
@@ -106,14 +99,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       }
       return true;
 
-    case MO(L_GER):
-      if (record->event.pressed) {
-        register_mods(MOD_MASK_SHIFT);
-      } else {
-        unregister_mods(MOD_MASK_SHIFT);
-      }
-      return true;
-
     case LT_NAV_SFT:
     case LT_FUN_SFT:
       if (record->event.pressed && record->tap.count) {
@@ -123,18 +108,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
           add_oneshot_mods(MOD_MASK_SHIFT);
         }
         return false;
-      }
-      return true;
-
-    case RGB_TOG:
-    case RGB_MOD:
-    case RGB_HUI:
-    case RGB_SAI:
-    case RGB_VAI:
-    case RGB_SPI:
-      if (record->event.pressed) {
-        show_rgb_data();
-        transaction_rpc_send(RPC_SHOW_RGB_DATA, 0, NULL);
       }
       return true;
 
@@ -220,17 +193,11 @@ const uint16_t PROGMEM lprn_combo[] = {US_D, US_F, COMBO_END};
 const uint16_t PROGMEM rprn_combo[] = {US_J, US_K, COMBO_END};
 const uint16_t PROGMEM rbrc_combo[] = {US_K, US_L, COMBO_END};
 
-const uint16_t PROGMEM ger_combo_left[] = {LT_GER_Y, US_X, COMBO_END};
-const uint16_t PROGMEM ger_combo_right[] = {US_DOT, LT_GER_SLSH, COMBO_END};
-
 combo_t key_combos[] = {
   COMBO(lbrc_combo, US_LBRC),
   COMBO(lprn_combo, US_LPRN),
   COMBO(rprn_combo, US_RPRN),
   COMBO(rbrc_combo, US_RBRC),
-
-  COMBO(ger_combo_left, MO(L_GER)),
-  COMBO(ger_combo_right, MO(L_GER))
 };
 
 uint8_t combo_ref_from_layer(uint8_t layer){
@@ -358,7 +325,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          _______,         _______,         _______,         US_EURO,         _______,         _______,                                              _______,         US_UDIA,         _______,         US_ODIA,         _______,         _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤                                    ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
-         _______,         US_ADIA,         US_SS,           _______,         _______,         _______,                                              _______,         _______,         _______,         _______,         _______,         _______,
+         _______,         US_ADIA,         US_SS,           _______,         OSM(MOD_LSFT),   _______,                                              _______,         OSM(MOD_RSFT),   _______,         _______,         _______,         _______,
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          _______,         _______,         _______,         _______,         _______,         _______,         _______,            _______,         _______,         _______,         _______,         _______,         _______,         _______,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
@@ -491,16 +458,8 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
  * OLED *
  ********/
 
-#define RGB_DATA_TIMEOUT 5000
-uint32_t rgb_data_timer = 0;
-
-void show_rgb_data(void) {
-  rgb_data_timer = timer_read32();
-}
-
 bool rgb_data_visible(void) {
-  return (rgb_data_timer &&
-    timer_elapsed32(rgb_data_timer) < RGB_DATA_TIMEOUT);
+  return layer_state_is(L_MEDIA);
 }
 
 bool render_left_display(void) {
