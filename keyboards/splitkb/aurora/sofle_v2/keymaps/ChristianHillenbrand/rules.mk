@@ -2,7 +2,6 @@ CONVERT_TO = liatris
 
 SRC += animations/bongocat.c \
        animations/luna.c     \
-	   features/achordion.c  \
 	   oled.c
 
 CAPS_WORD_ENABLE = yes
