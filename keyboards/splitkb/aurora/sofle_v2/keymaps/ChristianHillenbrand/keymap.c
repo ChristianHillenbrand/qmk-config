@@ -80,6 +80,8 @@ enum custom_keycodes {
 
 #define KC_LOWER LT(0, KC_LOWER_)
 #define KC_RAISE LT(0, KC_RAISE_)
+
+#define LT_MEDIA_SPC LT(L_MEDIA, KC_SPC)
 #define LT_NUM_ENT LT(L_NUM, KC_ENT)
 
 #define MOD_BIT_LSFT MOD_BIT(KC_LSFT)
@@ -106,14 +108,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         }
         return false;
       } else{
-        // hold -> different layers depending on tap
-        static uint8_t layer = 0;
+        // hold -> nav layer
         if (record->event.pressed) {
-          layer = (get_oneshot_mods() & MOD_BIT_LSFT) ? L_MEDIA : L_NAV;
-          del_oneshot_mods(MOD_BIT_LSFT);
-          layer_on(layer);
+          del_oneshot_mods(MOD_BIT_RSFT);
+          layer_on(L_NAV);
         } else {
-          layer_off(layer);
+          layer_off(L_NAV);
         }
         return true;
       }
@@ -309,7 +309,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          KC_LSFT,         MT_RALT_Y,       US_X,            US_C,            US_V,            US_B,            XXXXXXX,            KC_MUTE,         US_N,            US_M,            US_COMM,         US_DOT,          MT_RALT_SLSH,    KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         KC_LCTL,         KC_LOWER,        KC_SPC,             LT_NUM_ENT,      KC_RAISE,        KC_RCTL,         KC_LALT,         KC_RGUI
+                                           KC_LGUI,         KC_LALT,         KC_LCTL,         KC_LOWER,        LT_MEDIA_SPC,       LT_NUM_ENT,      KC_RAISE,        KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
@@ -325,7 +325,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────╮  ╭────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤
          KC_LSFT,         MT_RALT_Y,       US_X,            US_C,            US_D,            US_V,            XXXXXXX,            KC_MUTE,         US_K,            US_H,            US_COMM,         US_DOT,          MT_RALT_SLSH,    KC_RSFT,
     // ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤  ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯
-                                           KC_LGUI,         KC_LALT,         KC_LCTL,         KC_LOWER,        KC_SPC,             LT_NUM_ENT,      KC_RAISE,        KC_RCTL,         KC_LALT,         KC_RGUI
+                                           KC_LGUI,         KC_LALT,         KC_LCTL,         KC_LOWER,        LT_MEDIA_SPC,       LT_NUM_ENT,      KC_RAISE,        KC_RCTL,         KC_LALT,         KC_RGUI
     //                                   ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯  ╰────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 
   ),
