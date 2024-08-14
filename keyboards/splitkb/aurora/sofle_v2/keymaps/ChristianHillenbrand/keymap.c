@@ -7,6 +7,8 @@
 #include "layers.h"
 #include "oled.h"
 
+#define IDLE_MS 100
+
 /**********
  * STATUS *
  **********/
@@ -87,15 +89,34 @@ enum custom_keycodes {
 #define MOD_BIT_LSFT MOD_BIT(KC_LSFT)
 #define MOD_BIT_RSFT MOD_BIT(KC_RSFT)
 
-bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-  switch (keycode) {
-    case KC_SPC:
-      if (record->event.pressed) {
-        trigger_jump();
-        transaction_rpc_send(RPC_SPACE_PRESSED, 0, NULL);
-      }
-      return true;
+bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
+  static bool is_pressed[UINT8_MAX];
 
+  if (keycode == LT_MEDIA_SPC) {
+    const uint8_t tap_keycode = QK_LAYER_TAP_GET_TAP_KEYCODE(keycode);
+
+    if (record->event.pressed && last_input_activity_elapsed() < IDLE_MS) {
+      record->keycode = tap_keycode;
+      is_pressed[tap_keycode] = true;
+    }
+    else if (!record->event.pressed && is_pressed[tap_keycode]) {
+      record->keycode = tap_keycode;
+      is_pressed[tap_keycode] = false;
+    }
+  }
+
+  return true;
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t* record) {
+  const uint8_t tap_keycode = QK_LAYER_TAP_GET_TAP_KEYCODE(keycode);
+
+  if (tap_keycode == KC_SPC && record->event.pressed) {
+    trigger_jump();
+    transaction_rpc_send(RPC_SPACE_PRESSED, 0, NULL);
+  }
+
+  switch (keycode) {
     case KC_LOWER:
       if (record->tap.count) {
         // tap -> one shot shift
