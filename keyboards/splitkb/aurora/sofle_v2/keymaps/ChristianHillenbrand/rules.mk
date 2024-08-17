@@ -1,11 +1,9 @@
 CONVERT_TO = liatris
+USER_NAME = ChristianHillenbrand
 
 SRC += animations/bongocat.c \
        animations/luna.c     \
-	   oled.c
+	   oled.c                \
+	   keymap.c
 
-CAPS_WORD_ENABLE = yes
-COMBO_ENABLE = yes
-KEY_OVERRIDE_ENABLE = yes
-TAP_DANCE_ENABLE = yes
 WPM_ENABLE = yes

@@ -3,8 +3,6 @@
 
 #pragma once
 
-#define COMBO_TERM 25
-
 #define ENABLE_RGB_MATRIX_ALPHAS_MODS
 #define ENABLE_RGB_MATRIX_GRADIENT_UP_DOWN
 #define ENABLE_RGB_MATRIX_GRADIENT_LEFT_RIGHT
@@ -58,8 +56,6 @@
 #define OLED_FONT_H "keyboards/splitkb/aurora/sofle_v2/keymaps/ChristianHillenbrand/glcdfont.c"
 #define OLED_TIMEOUT 300000
 
-#define PERMISSIVE_HOLD
-
 #define RGB_MATRIX_SLEEP
 #define RGB_MATRIX_TIMEOUT 300000
 
@@ -72,6 +68,3 @@
 #define SPLIT_WATCHDOG_ENABLE
 #define SPLIT_WATCHDOG_TIMEOUT 5000
 #define SPLIT_WPM_ENABLE
-
-#define TAPPING_TERM 170
-#define QUICK_TAP_TERM 0
