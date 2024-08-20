@@ -1,7 +1,8 @@
-#include <transactions.h>
+#include QMK_KEYBOARD_H
 
-#include "base.h"
 #include "oled.h"
+
+#include <transactions.h>
 
 #define IDLE_MS 100
 
@@ -63,6 +64,24 @@ bool led_update_user(led_t led_state) {
 
   return true;
 }
+
+/**********
+ * KEYMAP *
+ **********/
+
+#define X_LT KC_ESC, US_1, US_2, US_3, US_4, US_5, US_6, US_7, US_8, US_9, US_0, KC_BSPC, KC_TAB,
+#define X_LM CW_TOGG,
+#define X_LB KC_LSFT,
+#define X_LH KC_LGUI, KC_LALT, KC_LCTL,
+
+#define X_CB XXXXXXX, KC_MUTE,
+
+#define X_RT KC_DEL,
+#define X_RM KC_QUOT,
+#define X_RB KC_RSFT,
+#define X_RH KC_RCTL, KC_LALT, KC_RGUI,
+
+#include "base.h"
 
 /***********
  * ENCODER *
