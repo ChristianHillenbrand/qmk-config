@@ -1,8 +1,6 @@
-#include QMK_KEYBOARD_H
+#include <transactions.h>
 
-#include "transactions.h"
-
-#include "base.c"
+#include "base.h"
 #include "oled.h"
 
 #define IDLE_MS 100
