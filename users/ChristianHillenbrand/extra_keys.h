@@ -1,3 +1,8 @@
+// number row
+#ifndef X_NR
+  #define X_NR
+#endif
+
 // left of left half
 #ifndef X_LT // top row
   #define X_LT

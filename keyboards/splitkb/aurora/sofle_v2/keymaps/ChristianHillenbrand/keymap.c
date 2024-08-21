@@ -69,7 +69,9 @@ bool led_update_user(led_t led_state) {
  * KEYMAP *
  **********/
 
-#define X_LT KC_ESC, US_1, US_2, US_3, US_4, US_5, US_6, US_7, US_8, US_9, US_0, KC_BSPC, KC_TAB,
+#define X_NR KC_ESC, US_1, US_2, US_3, US_4, US_5, US_6, US_7, US_8, US_9, US_0, KC_BSPC,
+
+#define X_LT KC_TAB,
 #define X_LM CW_TOGG,
 #define X_LB KC_LSFT,
 #define X_LH KC_LGUI, KC_LALT, KC_LCTL,
