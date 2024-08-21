@@ -1,6 +1,3 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/* Copyright 2023 splitkb.com <support@splitkb.com> */
-
 #pragma once
 
 #define ENABLE_RGB_MATRIX_ALPHAS_MODS
