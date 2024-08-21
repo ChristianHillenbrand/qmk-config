@@ -11,6 +11,40 @@
 
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
+/**********************
+ * CAPS WORD SETTINGS *
+ **********************/
+
+bool caps_word_press_user(uint16_t keycode) {
+  switch (keycode) {
+    case KC_A ... KC_Z:
+    case US_ADIA:
+    case US_ODIA:
+    case US_UDIA:
+    case US_MINS:
+      add_weak_mods(MOD_BIT(KC_LSFT));
+      return true;
+
+    case CW_TOGG:
+    case US_1 ... US_0:
+    case US_UNDS:
+    case KC_BSPC:
+    case KC_DEL:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+/*********************
+ * TAP HOLD SETTINGS *
+ *********************/
+
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+  return !IS_QK_ONE_SHOT_MOD(keycode);
+}
+
 /*******************
  * CUSTOM KEYCODES *
  *******************/
@@ -104,53 +138,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   return true;
 }
 
-/**************
- * TAP DANCES *
- **************/
-
-enum {
-  TD_BOOT_,
-  TD_RBT_,
-  TD_QWRTY_,
-  TD_COLMK_
-};
-
-void td_boot_fn(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    reset_keyboard();
-  }
-}
-
-void td_reset_fn(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    soft_reset_keyboard();
-  }
-}
-
-void td_qwrty_fn(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    set_single_persistent_default_layer(L_QWRTY);
-  }
-}
-
-void td_colmk_fn(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    set_single_persistent_default_layer(L_COLMK);
-  }
-}
-
-tap_dance_action_t tap_dance_actions[] = {
-  [TD_BOOT_] = ACTION_TAP_DANCE_FN(td_boot_fn),
-  [TD_RBT_] = ACTION_TAP_DANCE_FN(td_reset_fn),
-  [TD_QWRTY_] = ACTION_TAP_DANCE_FN(td_qwrty_fn),
-  [TD_COLMK_] = ACTION_TAP_DANCE_FN(td_colmk_fn)
-};
-
-#define TD_BOOT TD(TD_BOOT_)
-#define TD_RBT TD(TD_RBT_)
-#define TD_QWRTY TD(TD_QWRTY_)
-#define TD_COLMK TD(TD_COLMK_)
-
 /*****************
  * KEY OVERRIDES *
  *****************/
@@ -223,31 +210,52 @@ uint8_t combo_ref_from_layer(uint8_t layer){
   }
 }
 
-/**********************
- * CAPS WORD SETTINGS *
- **********************/
+/**************
+ * TAP DANCES *
+ **************/
 
-bool caps_word_press_user(uint16_t keycode) {
-  switch (keycode) {
-    case KC_A ... KC_Z:
-    case US_ADIA:
-    case US_ODIA:
-    case US_UDIA:
-    case US_MINS:
-      add_weak_mods(MOD_BIT(KC_LSFT));
-      return true;
+enum {
+  TD_BOOT_,
+  TD_RBT_,
+  TD_QWRTY_,
+  TD_COLMK_
+};
 
-    case CW_TOGG:
-    case US_1 ... US_0:
-    case US_UNDS:
-    case KC_BSPC:
-    case KC_DEL:
-      return true;
-
-    default:
-      return false;
+void td_boot_fn(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    reset_keyboard();
   }
 }
+
+void td_reset_fn(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    soft_reset_keyboard();
+  }
+}
+
+void td_qwrty_fn(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    set_single_persistent_default_layer(L_QWRTY);
+  }
+}
+
+void td_colmk_fn(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    set_single_persistent_default_layer(L_COLMK);
+  }
+}
+
+tap_dance_action_t tap_dance_actions[] = {
+  [TD_BOOT_] = ACTION_TAP_DANCE_FN(td_boot_fn),
+  [TD_RBT_] = ACTION_TAP_DANCE_FN(td_reset_fn),
+  [TD_QWRTY_] = ACTION_TAP_DANCE_FN(td_qwrty_fn),
+  [TD_COLMK_] = ACTION_TAP_DANCE_FN(td_colmk_fn)
+};
+
+#define TD_BOOT TD(TD_BOOT_)
+#define TD_RBT TD(TD_RBT_)
+#define TD_QWRTY TD(TD_QWRTY_)
+#define TD_COLMK TD(TD_COLMK_)
 
 /**********
  * KEYMAP *
