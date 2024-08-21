@@ -335,7 +335,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
 
-  [L_NUM] = LAYOUT_wrapper(
+  [L_FUN] = LAYOUT_wrapper(
 
     //                                                                                                     ╭──────╮
                                                                                                              X_NR
