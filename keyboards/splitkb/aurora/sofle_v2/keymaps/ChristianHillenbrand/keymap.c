@@ -79,7 +79,7 @@ bool led_update_user(led_t led_state) {
 #define X_RT KC_DEL,
 #define X_RM KC_QUOT,
 #define X_RB KC_RSFT,
-#define X_RH KC_RCTL, KC_LALT, KC_RGUI,
+#define X_RH ,KC_RCTL, KC_LALT, KC_RGUI
 
 #include "base.h"
 

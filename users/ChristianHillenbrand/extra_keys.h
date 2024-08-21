@@ -8,11 +8,11 @@
 #endif
 
 #ifndef X_LB // bottom row
-    #define X_LB
+  #define X_LB
 #endif
 
 #ifndef X_LH // thumb row
-    #define X_LH
+  #define X_LH
 #endif
 
 // center
