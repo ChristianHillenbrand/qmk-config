@@ -85,6 +85,17 @@ bool led_update_user(led_t led_state) {
 
 #include "base.h"
 
+bool process_record_user_special(uint16_t keycode, keyrecord_t* record){
+  const uint8_t tap_keycode = QK_LAYER_TAP_GET_TAP_KEYCODE(keycode);
+
+  if (tap_keycode == KC_SPC && record->event.pressed) {
+    trigger_jump();
+    transaction_rpc_send(RPC_SPACE_PRESSED, 0, NULL);
+  }
+
+  return true;
+}
+
 /***********
  * ENCODER *
  ***********/

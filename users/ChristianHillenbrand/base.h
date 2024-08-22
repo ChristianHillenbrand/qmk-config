@@ -3,6 +3,7 @@
 #include QMK_KEYBOARD_H
 
 #include "extra_keys.h"
+#include "funcs.h"
 #include "layers.h"
 
 #include <keymap_us_extended.h>
@@ -51,7 +52,8 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 
 enum custom_keycodes {
   KC_LOWER_ = SAFE_RANGE,
-  KC_RAISE_
+  KC_RAISE_,
+  KC_MAX,
 };
 
 #define MT_RALT_Y MT(MOD_RALT, US_Y)
@@ -86,6 +88,9 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
+  if (!process_record_user_special(keycode, record))
+    return false;
+
   switch (keycode) {
     case KC_LOWER:
       if (record->tap.count) {
