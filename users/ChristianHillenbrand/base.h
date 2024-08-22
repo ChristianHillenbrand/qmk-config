@@ -42,8 +42,12 @@ bool caps_word_press_user(uint16_t keycode) {
  * TAP HOLD SETTINGS *
  *********************/
 
-bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  return !IS_QK_ONE_SHOT_MOD(keycode);
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+  if (IS_QK_ONE_SHOT_MOD(keycode)) {
+    return 0;
+  }
+
+  return TAPPING_TERM;
 }
 
 /*******************
@@ -192,20 +196,20 @@ const uint16_t PROGMEM combo_caps_word[] = {KC_LOWER, KC_RAISE, COMBO_END};
 
 combo_t key_combos[] = {
   // left half combos
-  COMBO(combo_esc, KC_ESC),
-  COMBO(combo_tab, KC_TAB),
-  COMBO(combo_lbrc, US_LBRC),
-  COMBO(combo_lprn, US_LPRN),
+    COMBO(combo_esc, KC_ESC),
+    COMBO(combo_tab, KC_TAB),
+    COMBO(combo_lbrc, US_LBRC),
+    COMBO(combo_lprn, US_LPRN),
 
-  // right half combos
-  COMBO(combo_bspc, KC_BSPC),
-  COMBO(combo_del, KC_DEL),
-  COMBO(combo_rprn, US_RPRN),
-  COMBO(combo_rbrc, US_RBRC),
+    // right half combos
+    COMBO(combo_bspc, KC_BSPC),
+    COMBO(combo_del, KC_DEL),
+    COMBO(combo_rprn, US_RPRN),
+    COMBO(combo_rbrc, US_RBRC),
 
-  // mixed combos
-  COMBO(combo_gui, KC_LGUI),
-  COMBO(combo_caps_word, CW_TOGG)
+    // mixed combos
+    COMBO(combo_gui, KC_LGUI),
+    COMBO(combo_caps_word, CW_TOGG)
 };
 
 uint8_t combo_ref_from_layer(uint8_t layer){
