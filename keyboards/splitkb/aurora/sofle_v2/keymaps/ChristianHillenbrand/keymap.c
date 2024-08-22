@@ -129,9 +129,12 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
       for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
         uint8_t index = g_led_config.matrix_co[row][col];
 
-        if (index >= led_min && index < led_max && index != NO_LED &&
-          keymap_key_to_keycode(highest_layer, (keypos_t){col,row}) == KC_TRNS) {
+        if (index >= led_min && index < led_max && index != NO_LED) {
+          uint16_t base_layer_code = keymap_key_to_keycode(L_QWRTY, (keypos_t){col,row});
+          uint16_t highest_layer_code = keymap_key_to_keycode(highest_layer, (keypos_t){col,row});
+          if (highest_layer_code == base_layer_code || highest_layer_code == KC_TRNS) {
             rgb_matrix_set_color(index, RGB_BLACK);
+          }
         }
       }
     }
