@@ -38,18 +38,6 @@ bool caps_word_press_user(uint16_t keycode) {
   }
 }
 
-/*********************
- * TAP HOLD SETTINGS *
- *********************/
-
-uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
-  if (IS_QK_ONE_SHOT_MOD(keycode)) {
-    return 0;
-  }
-
-  return TAPPING_TERM;
-}
-
 /*******************
  * CUSTOM KEYCODES *
  *******************/
@@ -72,20 +60,38 @@ enum custom_keycodes {
 #define MOD_BIT_LSFT MOD_BIT(KC_LSFT)
 #define MOD_BIT_RSFT MOD_BIT(KC_RSFT)
 
+bool lower_pressed = false;
+bool raise_pressed = false;
+
 bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
   static bool is_pressed[UINT8_MAX];
 
-  if (keycode == LT_MEDIA_SPC) {
-    const uint8_t tap_keycode = QK_LAYER_TAP_GET_TAP_KEYCODE(keycode);
+  switch (keycode) {
+    case KC_LOWER:
+      lower_pressed = record->event.pressed;
+      break;
 
-    if (record->event.pressed && last_input_activity_elapsed() < IDLE_MS) {
-      record->keycode = tap_keycode;
-      is_pressed[tap_keycode] = true;
+    case KC_RAISE:
+      raise_pressed = record->event.pressed;
+      break;
+
+    case LT_MEDIA_SPC:
+    {
+      const uint8_t tap_keycode = QK_LAYER_TAP_GET_TAP_KEYCODE(keycode);
+
+      if (record->event.pressed && last_input_activity_elapsed() < IDLE_MS) {
+        record->keycode = tap_keycode;
+        is_pressed[tap_keycode] = true;
+      }
+      else if (!record->event.pressed && is_pressed[tap_keycode]) {
+        record->keycode = tap_keycode;
+        is_pressed[tap_keycode] = false;
+      }
     }
-    else if (!record->event.pressed && is_pressed[tap_keycode]) {
-      record->keycode = tap_keycode;
-      is_pressed[tap_keycode] = false;
-    }
+    break;
+
+    default:
+      break;
   }
 
   return true;
@@ -178,6 +184,21 @@ const key_override_t **key_overrides = (const key_override_t *[]){
  * COMBOS *
  **********/
 
+enum combos {
+  COMBO_ESC,
+  COMBO_TAB,
+  COMBO_LBRC,
+  COMBO_LPRN,
+
+  COMBO_BSPC,
+  COMBO_DEL,
+  COMBO_RPRN,
+  COMBO_RBRC,
+
+  COMBO_GUI,
+  COMBO_CAPS_WORD
+};
+
 // left half combos
 const uint16_t PROGMEM combo_esc[] = {US_W, US_E, COMBO_END};
 const uint16_t PROGMEM combo_tab[] = {US_E, US_R, COMBO_END};
@@ -196,26 +217,41 @@ const uint16_t PROGMEM combo_caps_word[] = {KC_LOWER, KC_RAISE, COMBO_END};
 
 combo_t key_combos[] = {
   // left half combos
-    COMBO(combo_esc, KC_ESC),
-    COMBO(combo_tab, KC_TAB),
-    COMBO(combo_lbrc, US_LBRC),
-    COMBO(combo_lprn, US_LPRN),
+  [COMBO_ESC] = COMBO(combo_esc, KC_ESC),
+  [COMBO_TAB] = COMBO(combo_tab, KC_TAB),
+  [COMBO_LBRC] = COMBO(combo_lbrc, US_LBRC),
+  [COMBO_LPRN] = COMBO(combo_lprn, US_LPRN),
 
-    // right half combos
-    COMBO(combo_bspc, KC_BSPC),
-    COMBO(combo_del, KC_DEL),
-    COMBO(combo_rprn, US_RPRN),
-    COMBO(combo_rbrc, US_RBRC),
+  // right half combos
+  [COMBO_BSPC] = COMBO(combo_bspc, KC_BSPC),
+  [COMBO_DEL] = COMBO(combo_del, KC_DEL),
+  [COMBO_RPRN] = COMBO(combo_rprn, US_RPRN),
+  [COMBO_RBRC] = COMBO(combo_rbrc, US_RBRC),
 
-    // mixed combos
-    COMBO(combo_gui, KC_LGUI),
-    COMBO(combo_caps_word, CW_TOGG)
+  // mixed combos
+  [COMBO_GUI] = COMBO(combo_gui, KC_LGUI),
+  [COMBO_CAPS_WORD] = COMBO(combo_caps_word, CW_TOGG)
 };
 
 uint8_t combo_ref_from_layer(uint8_t layer){
   switch (layer){
     case L_COLMK: return L_QWRTY;
     default: return layer;
+  }
+}
+
+bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
+  switch (combo_index) {
+    case COMBO_LBRC:
+    case COMBO_LPRN:
+      return !lower_pressed;
+
+    case COMBO_RPRN:
+    case COMBO_RBRC:
+      return !raise_pressed;
+
+    default:
+      return true;
   }
 }
 
