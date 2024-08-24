@@ -167,7 +167,7 @@ const key_override_t ralt_u = ko_make_basic(MOD_BIT_RALT, US_U, US_UDIA);
 const key_override_t ralt_s = ko_make_basic(MOD_BIT_RALT, US_S, US_SS);
 const key_override_t ralt_e = ko_make_basic(MOD_BIT_RALT, US_E, US_EURO);
 
-const key_override_t **key_overrides = (const key_override_t *[]){
+const key_override_t** key_overrides = (const key_override_t* []){
   &shift_esc,
   &shift_lprn,
   &shift_rprn,
