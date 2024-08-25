@@ -204,8 +204,6 @@ const key_override_t** key_overrides = (const key_override_t* []){
  **********/
 
 enum combos {
-  COMBO_ESC,
-  COMBO_TAB,
   COMBO_LBRC,
   COMBO_LPRN,
 
@@ -214,41 +212,30 @@ enum combos {
   COMBO_RPRN,
   COMBO_RBRC,
 
-  COMBO_GUI,
   COMBO_CAPS_WORD
 };
 
 // left half combos
-const uint16_t PROGMEM combo_esc[] = {US_W, US_E, COMBO_END};
-const uint16_t PROGMEM combo_tab[] = {US_E, US_R, COMBO_END};
 const uint16_t PROGMEM combo_lbrc[] = {US_S, US_D, COMBO_END};
 const uint16_t PROGMEM combo_lprn[] = {US_D, US_F, COMBO_END};
 
 // right half combos
-const uint16_t PROGMEM combo_bspc[] = {US_U, US_I, COMBO_END};
-const uint16_t PROGMEM combo_del[] = {US_I, US_O, COMBO_END};
 const uint16_t PROGMEM combo_rprn[] = {US_J, US_K, COMBO_END};
 const uint16_t PROGMEM combo_rbrc[] = {US_K, US_L, COMBO_END};
 
 // mixed combos
-const uint16_t PROGMEM combo_gui[] = {US_F, US_J, COMBO_END};
 const uint16_t PROGMEM combo_caps_word[] = {KC_LOWER, KC_RAISE, COMBO_END};
 
 combo_t key_combos[] = {
   // left half combos
-  [COMBO_ESC] = COMBO(combo_esc, KC_ESC),
-  [COMBO_TAB] = COMBO(combo_tab, KC_TAB),
   [COMBO_LBRC] = COMBO(combo_lbrc, US_LBRC),
   [COMBO_LPRN] = COMBO(combo_lprn, US_LPRN),
 
   // right half combos
-  [COMBO_BSPC] = COMBO(combo_bspc, KC_BSPC),
-  [COMBO_DEL] = COMBO(combo_del, KC_DEL),
   [COMBO_RPRN] = COMBO(combo_rprn, US_RPRN),
   [COMBO_RBRC] = COMBO(combo_rbrc, US_RBRC),
 
   // mixed combos
-  [COMBO_GUI] = COMBO(combo_gui, KC_LGUI),
   [COMBO_CAPS_WORD] = COMBO(combo_caps_word, CW_TOGG)
 };
 
