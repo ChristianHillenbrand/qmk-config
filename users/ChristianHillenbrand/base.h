@@ -55,7 +55,7 @@ enum custom_keycodes {
 #define KC_RAISE LT(0, KC_RAISE_)
 
 #define LT_MEDIA_SPC LT(L_MEDIA, KC_SPC)
-#define LT_NUM_ENT LT(L_NUM, KC_ENT)
+#define LT_FUN_ENT LT(L_FUN, KC_ENT)
 
 #define MOD_BIT_LSFT MOD_BIT(KC_LSFT)
 #define MOD_BIT_RSFT MOD_BIT(KC_RSFT)
@@ -136,12 +136,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         }
         return false;
       } else {
-        // hold -> fun layer
+        // hold -> num layer
         if (record->event.pressed) {
           del_oneshot_mods(MOD_BIT_RSFT);
-          layer_on(L_FUN);
+          layer_on(L_NUM);
         } else {
-          layer_off(L_FUN);
+          layer_off(L_NUM);
         }
         return true;
       }
@@ -162,7 +162,7 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     case KC_LOWER:
     case KC_RAISE:
     case LT_MEDIA_SPC:
-    case LT_NUM_ENT:
+    case LT_FUN_ENT:
     case MT_RALT_Y:
     case MT_RALT_SLSH:
       return true;
@@ -337,7 +337,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       MT_RALT_Y,       US_X,            US_C,            US_V,            US_B,                X_CB       US_N,            US_M,            US_COMM,         US_DOT,          MT_RALT_SLSH,        X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_NUM_ENT,      KC_RAISE                                                                X_RH
+         X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_FUN_ENT,      KC_RAISE                                                                X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
@@ -353,7 +353,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       MT_RALT_Y,       US_X,            US_C,            US_D,            US_V,                X_CB       US_K,            US_H,            US_COMM,         US_DOT,          MT_RALT_SLSH,        X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_NUM_ENT,      KC_RAISE                                                                X_RH
+         X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_FUN_ENT,      KC_RAISE                                                                X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
@@ -405,7 +405,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
-
 
   [L_FUN] = LAYOUT_wrapper(
 
