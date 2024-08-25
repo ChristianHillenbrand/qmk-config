@@ -48,6 +48,14 @@ enum custom_keycodes {
   KC_MAX,
 };
 
+#ifndef DRGSCRL
+  #define DRGSCRL KC_TRANS
+#endif
+
+#ifndef SNIPING
+  #define SNIPING KC_TRANS
+#endif
+
 #define MT_RALT_Y MT(MOD_RALT, US_Y)
 #define MT_RALT_SLSH MT(MOD_RALT, US_SLSH)
 
@@ -56,9 +64,6 @@ enum custom_keycodes {
 
 #define LT_MEDIA_SPC LT(L_MEDIA, KC_SPC)
 #define LT_FUN_ENT LT(L_FUN, KC_ENT)
-
-#define MOD_BIT_LSFT MOD_BIT(KC_LSFT)
-#define MOD_BIT_RSFT MOD_BIT(KC_RSFT)
 
 bool lower_pressed = false;
 bool raise_pressed = false;
@@ -107,17 +112,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       if (record->tap.count) {
         // tap -> one shot shift
         if (record->event.pressed) {
-          if (get_oneshot_mods() & MOD_BIT_LSFT) {
-            del_oneshot_mods(MOD_BIT_LSFT);
+          if (get_oneshot_mods() & MOD_BIT(KC_LSFT)) {
+            del_oneshot_mods(MOD_BIT(KC_LSFT));
           } else {
-            add_oneshot_mods(MOD_BIT_LSFT);
+            add_oneshot_mods(MOD_BIT(KC_LSFT));
           }
         }
         return false;
       } else{
         // hold -> nav layer
         if (record->event.pressed) {
-          del_oneshot_mods(MOD_BIT_RSFT);
+          del_oneshot_mods(MOD_BIT(KC_LSFT));
           layer_on(L_NAV);
         } else {
           layer_off(L_NAV);
@@ -129,17 +134,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       if (record->tap.count) {
         // tap -> one shot shift
         if (record->event.pressed) {
-          if (get_oneshot_mods() & MOD_BIT_RSFT) {
-            del_oneshot_mods(MOD_BIT_RSFT);
+          if (get_oneshot_mods() & MOD_BIT(KC_RSFT)) {
+            del_oneshot_mods(MOD_BIT(KC_RSFT));
           } else {
-            add_oneshot_mods(MOD_BIT_RSFT);
+            add_oneshot_mods(MOD_BIT(KC_RSFT));
           }
         }
         return false;
       } else {
         // hold -> num layer
         if (record->event.pressed) {
-          del_oneshot_mods(MOD_BIT_RSFT);
+          del_oneshot_mods(MOD_BIT(KC_RSFT));
           layer_on(L_NUM);
         } else {
           layer_off(L_NUM);
@@ -431,13 +436,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //                                                                                                     ╭──────╮
                                                                                                              X_NR
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
-         X_LT       _______,         _______,         _______,         _______,         _______,             X_CT       _______,         _______,         _______,         _______,         _______,             X_RT
+         X_LT       _______,         DRGSCRL,         SNIPING,         _______,         _______,             X_CT       _______,         _______,         SNIPING,         DRGSCRL,         _______,             X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       _______,         KC_BTN3,         KC_BTN2,         KC_BTN1,         _______,             X_CM       _______,         KC_BTN1,         KC_BTN2,         KC_BTN3,         _______,             X_RM
+         X_LM       OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,             X_CM       _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),       X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LB       C(US_Y),         C(US_X),         C(US_C),         C(US_V),         C(US_Z),             X_CB       C(US_Z),         C(US_V),         C(US_C),         C(US_X),         C(US_Y),             X_RB
+         X_LB       TG(L_MOUSE),     C(US_X),         C(US_C),         C(US_V),         _______,             X_CB       _______,         C(US_V),         C(US_C),         C(US_X),         TG(L_MOUSE),         X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          TG(L_MOUSE),     _______,             X_CH       _______,         TG(L_MOUSE)                                                             X_RH
+         X_LH                                                          KC_BTN2,         KC_BTN1,             X_CH       KC_BTN1,         KC_BTN2                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   )
