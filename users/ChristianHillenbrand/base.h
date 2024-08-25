@@ -153,6 +153,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   return true;
 }
 
+/*********************
+ *   *
+ *********************/
+
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case KC_LOWER:
+    case KC_RAISE:
+    case LT_MEDIA_SPC:
+    case LT_NUM_ENT:
+    case MT_RALT_Y:
+    case MT_RALT_SLSH:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 /*****************
  * KEY OVERRIDES *
  *****************/
