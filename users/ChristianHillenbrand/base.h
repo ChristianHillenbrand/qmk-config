@@ -49,11 +49,11 @@ enum custom_keycodes {
 };
 
 #ifndef DRGSCRL
-  #define DRGSCRL KC_TRANS
+  #define DRGSCRL KC_TRNS
 #endif
 
 #ifndef SNIPING
-  #define SNIPING KC_TRANS
+  #define SNIPING KC_TRNS
 #endif
 
 #define MT_RALT_Y MT(MOD_RALT, US_Y)
