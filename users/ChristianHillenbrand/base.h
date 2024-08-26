@@ -12,6 +12,11 @@
 
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
+#define GET_TAP_KEYCODE(kc) ((kc)&0xFF)
+#define IS_TYPING(kc) ( \
+  ((kc) <= KC_Z || (kc) == KC_SPC) && \
+  (last_input_activity_elapsed() < IDLE_MS))
+
 /**********************
  * CAPS WORD SETTINGS *
  **********************/
@@ -69,7 +74,10 @@ bool lower_pressed = false;
 bool raise_pressed = false;
 
 bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
+  static uint16_t prev_keycode;
   static bool is_pressed[UINT8_MAX];
+
+  const uint8_t tap_keycode = GET_TAP_KEYCODE(keycode);
 
   switch (keycode) {
     case KC_LOWER:
@@ -82,9 +90,7 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     case LT_FUN_SPC:
     {
-      const uint8_t tap_keycode = QK_LAYER_TAP_GET_TAP_KEYCODE(keycode);
-
-      if (record->event.pressed && last_input_activity_elapsed() < IDLE_MS) {
+      if (record->event.pressed && IS_TYPING(prev_keycode)) {
         record->keycode = tap_keycode;
         is_pressed[tap_keycode] = true;
       }
@@ -97,6 +103,10 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     default:
       break;
+  }
+
+  if (record->event.pressed) {
+    prev_keycode = tap_keycode;
   }
 
   return true;
