@@ -62,8 +62,8 @@ enum custom_keycodes {
 #define KC_LOWER LT(0, KC_LOWER_)
 #define KC_RAISE LT(0, KC_RAISE_)
 
-#define LT_MEDIA_SPC LT(L_MEDIA, KC_SPC)
-#define LT_FUN_ENT LT(L_FUN, KC_ENT)
+#define LT_FUN_SPC LT(L_FUN, KC_SPC)
+#define LT_SYM_ENT LT(L_SYM, KC_ENT)
 
 bool lower_pressed = false;
 bool raise_pressed = false;
@@ -80,8 +80,7 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
       raise_pressed = record->event.pressed;
       break;
 
-    case LT_MEDIA_SPC:
-    case LT_FUN_ENT:
+    case LT_FUN_SPC:
     {
       const uint8_t tap_keycode = QK_LAYER_TAP_GET_TAP_KEYCODE(keycode);
 
@@ -160,15 +159,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 }
 
 /*********************
- *   *
+ * TAP HOLD SETTINGS *
  *********************/
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case KC_LOWER:
     case KC_RAISE:
-    case LT_MEDIA_SPC:
-    case LT_FUN_ENT:
+    case LT_FUN_SPC:
+    case LT_SYM_ENT:
     case MT_RALT_Y:
     case MT_RALT_SLSH:
       return true;
@@ -218,7 +217,8 @@ enum combos {
   COMBO_RPRN,
   COMBO_RBRC,
 
-  COMBO_CAPS_WORD
+  COMBO_CAPS_WORD,
+  COMBO_MEDIA
 };
 
 // left half combos
@@ -230,7 +230,8 @@ const uint16_t PROGMEM combo_rprn[] = {US_J, US_K, COMBO_END};
 const uint16_t PROGMEM combo_rbrc[] = {US_K, US_L, COMBO_END};
 
 // mixed combos
-const uint16_t PROGMEM combo_caps_word[] = {KC_LOWER, KC_RAISE, COMBO_END};
+const uint16_t PROGMEM combo_caps_word[] = {US_F, US_J, COMBO_END};
+const uint16_t PROGMEM combo_media[] = {KC_LOWER, KC_RAISE, COMBO_END};
 
 combo_t key_combos[] = {
   // left half combos
@@ -242,7 +243,8 @@ combo_t key_combos[] = {
   [COMBO_RBRC] = COMBO(combo_rbrc, US_RBRC),
 
   // mixed combos
-  [COMBO_CAPS_WORD] = COMBO(combo_caps_word, CW_TOGG)
+  [COMBO_CAPS_WORD] = COMBO(combo_caps_word, CW_TOGG),
+  [COMBO_MEDIA] = COMBO(combo_media, MO(L_MEDIA))
 };
 
 uint8_t combo_ref_from_layer(uint8_t layer){
@@ -330,7 +332,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       MT_RALT_Y,       US_X,            US_C,            US_V,            US_B,                X_CB       US_N,            US_M,            US_COMM,         US_DOT,          MT_RALT_SLSH,        X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_FUN_ENT,      KC_RAISE                                                                X_RH
+         X_LH                                                          KC_LOWER,        LT_FUN_SPC,          X_CH       LT_SYM_ENT,      KC_RAISE                                                                X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
@@ -346,7 +348,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       MT_RALT_Y,       US_X,            US_C,            US_D,            US_V,                X_CB       US_K,            US_H,            US_COMM,         US_DOT,          MT_RALT_SLSH,        X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_FUN_ENT,      KC_RAISE                                                                X_RH
+         X_LH                                                          KC_LOWER,        LT_FUN_SPC,          X_CH       LT_SYM_ENT,      KC_RAISE                                                                X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
@@ -367,18 +369,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   ),
 
-  [L_MEDIA] = LAYOUT_wrapper(
+  [L_FUN] = LAYOUT_wrapper(
 
     //                                                                                                     ╭──────╮
                                                                                                              X_NR
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
-         X_LT       TD_BOOT,         TD_RBT,          TD_QWRTY,        TD_COLMK,        _______,             X_CT       RGB_TOG,         XXXXXXX,         KC_VOLU,         XXXXXXX,         XXXXXXX,             X_RT
+         X_LT       TD_BOOT,         TD_RBT,          TD_QWRTY,        TD_COLMK,        _______,             X_CT       _______,         KC_F7,           KC_F8,           KC_F9,           KC_F12,              X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,             X_CM       XXXXXXX,         KC_MPRV,         KC_VOLD,         KC_MNXT,         XXXXXXX,             X_RM
+         X_LM       OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,             X_CM       _______,         KC_F4,           KC_F5,           KC_F6,           KC_F11,              X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LB       TG(L_MOUSE),     _______,         _______,         _______,         _______,             X_CB       RGB_MOD,         RGB_HUI,         RGB_SAI,         RGB_VAI,         RGB_SPI,             X_RB
+         X_LB       TG(L_MOUSE),     _______,         _______,         _______,         _______,             X_CB       _______,         KC_F1,           KC_F2,           KC_F3,           KC_F10,              X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          _______,         _______,             X_CH       KC_MSTP,         KC_MPLY                                                                 X_RH
+         X_LH                                                          _______,         _______,             X_CH       _______,         _______                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
@@ -415,16 +417,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   ),
 
-  [L_FUN] = LAYOUT_wrapper(
+  [L_MEDIA] = LAYOUT_wrapper(
 
     //                                                                                                     ╭──────╮
                                                                                                              X_NR
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
-         X_LT       KC_F12,          KC_F7,           KC_F8,           KC_F9,           XXXXXXX,             X_CT       _______,         TD_COLMK,        TD_QWRTY,        TD_RBT,          TD_BOOT,             X_RT
+         X_LT       RGB_TOG,         _______,         _______,         _______,         _______,             X_CT       _______,         _______,         _______,         _______,         _______,             X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       KC_F11,          KC_F4,           KC_F5,           KC_F6,           XXXXXXX,             X_CM       _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),       X_RM
+         X_LM       RGB_SPI,         RGB_VAI,         RGB_SAI,         RGB_HUI,         RGB_MOD,             X_CM       _______,         KC_VOLD,         KC_MUTE,         KC_VOLU,         _______,             X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LB       KC_F10,          KC_F1,           KC_F2,           KC_F3,           XXXXXXX,             X_CB       _______,         _______,         _______,         _______,         TG(L_MOUSE),         X_RB
+         X_LB       RGB_SPD,         RGB_VAD,         RGB_SAD,         RGB_HUD,         RGB_RMOD,            X_CB       _______,         KC_MPRV,         KC_MPLY,         KC_MNXT,         _______,             X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
          X_LH                                                          _______,         _______,             X_CH       _______,         _______                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
@@ -436,11 +438,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //                                                                                                     ╭──────╮
                                                                                                              X_NR
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
-         X_LT       TG(L_MOUSE),     DRGSCRL,         SNIPING,         XXXXXXX,         XXXXXXX,             X_CT       XXXXXXX,         XXXXXXX,         SNIPING,         DRGSCRL,         TG(L_MOUSE),         X_RT
+         X_LT       TG(L_MOUSE),     DRGSCRL,         SNIPING,         _______,         _______,             X_CT       _______,         _______,         SNIPING,         DRGSCRL,         TG(L_MOUSE),         X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   XXXXXXX,             X_CM       XXXXXXX,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),       X_RM
+         X_LM       OSM(MOD_LGUI),   OSM(MOD_LALT),   OSM(MOD_LCTL),   OSM(MOD_LSFT),   _______,             X_CM       _______,         OSM(MOD_RSFT),   OSM(MOD_RCTL),   OSM(MOD_LALT),   OSM(MOD_RGUI),       X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LB       C(US_Y),         C(US_X),         C(US_C),         C(US_V),         C(US_Z)              X_CB       C(US_Z),         C(US_V),         C(US_C),         C(US_X),         C(US_Y),             X_RB
+         X_LB       C(US_Y),         C(US_X),         C(US_C),         C(US_V),         C(US_Z),             X_CB       C(US_Z),         C(US_V),         C(US_C),         C(US_X),         C(US_Y),             X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
          X_LH                                                          KC_BTN2,         KC_BTN1,             X_CH       KC_BTN1,         KC_BTN2                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
