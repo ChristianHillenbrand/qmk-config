@@ -56,8 +56,8 @@ void render_layer(void) {
       oled_write_P(PSTR(" NAV "), false);
       break;
 
-    case L_FUN:
-      oled_write_P(PSTR(" FUN "), false);
+    case L_MEDIA:
+      oled_write_P(PSTR("MEDIA"), false);
       break;
 
     case L_NUM:
@@ -68,8 +68,8 @@ void render_layer(void) {
       oled_write_P(PSTR(" SYM "), false);
       break;
 
-    case L_MEDIA:
-      oled_write_P(PSTR("MEDIA"), false);
+    case L_FUN:
+      oled_write_P(PSTR(" FUN "), false);
       break;
 
     case L_MOUSE:
