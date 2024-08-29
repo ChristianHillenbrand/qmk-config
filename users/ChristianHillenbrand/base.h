@@ -61,6 +61,9 @@ enum custom_keycodes {
   #define SNIPING KC_TRNS
 #endif
 
+#define HRML(A, B, C, D) MT(MOD_LGUI, A), MT(MOD_LALT, B), MT(MOD_LCTL, C), MT(MOD_LSFT, D)
+#define HRMR(A, B, C, D) MT(MOD_RSFT, A), MT(MOD_RCTL, B), MT(MOD_LALT, C), MT(MOD_RGUI, D)
+
 #define MT_RALT_Y MT(MOD_RALT, US_Y)
 #define MT_RALT_SLSH MT(MOD_RALT, US_SLSH)
 
@@ -173,18 +176,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
  *********************/
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case KC_LOWER:
-    case KC_RAISE:
-    case LT_FUN_SPC:
-    case LT_SYM_ENT:
-    case MT_RALT_Y:
-    case MT_RALT_SLSH:
-      return true;
-
-    default:
-      return false;
-  }
+  return IS_QK_MOD_TAP(keycode) || IS_QK_LAYER_TAP(keycode);
 }
 
 /*****************
@@ -338,7 +330,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
          X_LT       US_Q,            US_W,            US_E,            US_R,            US_T,                X_CT       US_Z,            US_U,            US_I,            US_O,            US_P,                X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       US_A,            US_S,            US_D,            US_F,            US_G,                X_CM       US_H,            US_J,            US_K,            US_L,            US_SCLN,             X_RM
+         X_LM       HRML(US_A,       US_S,            US_D,            US_F),           US_G,                X_CM       US_H,            HRMR(US_J,       US_K,            US_L,            US_SCLN),            X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       MT_RALT_Y,       US_X,            US_C,            US_V,            US_B,                X_CB       US_N,            US_M,            US_COMM,         US_DOT,          MT_RALT_SLSH,        X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
@@ -354,7 +346,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
          X_LT       US_Q,            US_W,            US_F,            US_P,            US_B,                X_CT       US_J,            US_L,            US_U,            US_Z,            US_SCLN,             X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       US_A,            US_R,            US_S,            US_T,            US_G,                X_CM       US_M,            US_N,            US_E,            US_I,            US_O,                X_RM
+         X_LM       HRML(US_A,       US_R,            US_S,            US_T),           US_G,                X_CM       US_M,            HRMR(US_N,       US_E,            US_I,            US_O),               X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       MT_RALT_Y,       US_X,            US_C,            US_D,            US_V,                X_CB       US_K,            US_H,            US_COMM,         US_DOT,          MT_RALT_SLSH,        X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤

@@ -4,8 +4,6 @@
 
 #include <transactions.h>
 
-#define IDLE_MS 100
-
 /**********
  * STATUS *
  **********/
