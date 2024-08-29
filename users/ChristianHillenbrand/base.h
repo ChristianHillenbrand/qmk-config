@@ -61,17 +61,11 @@ enum custom_keycodes {
   #define SNIPING KC_TRNS
 #endif
 
-#define HRML(A, B, C, D) MT(MOD_LGUI, A), MT(MOD_LALT, B), MT(MOD_LCTL, C), MT(MOD_LSFT, D)
-#define HRMR(A, B, C, D) MT(MOD_RSFT, A), MT(MOD_RCTL, B), MT(MOD_LALT, C), MT(MOD_RGUI, D)
-
 #define KC_LOWER LT(0, KC_LOWER_)
 #define KC_RAISE LT(0, KC_RAISE_)
 
 #define LT_MEDIA_SPC LT(L_MEDIA, KC_SPC)
 #define LT_FUN_ENT LT(L_FUN, KC_ENT)
-
-#define MT_RALT_Y MT(MOD_RALT, US_Y)
-#define MT_RALT_SLSH MT(MOD_RALT, US_SLSH)
 
 bool lower_pressed = false;
 bool raise_pressed = false;
@@ -176,9 +170,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
  *********************/
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  // don't simply allow permissive hold for all keycodes since
-  // it definitely shouldn't be activated for one shot mods
-  return IS_QK_MOD_TAP(keycode) || IS_QK_LAYER_TAP(keycode);
+  // only allow permissive holds explicitly so
+  // they won't be activated for one shot mods
+  switch (keycode)
+  {
+    case KC_LOWER:
+    case KC_RAISE:
+      return true;
+
+    case LT_MEDIA_SPC:
+    case LT_FUN_ENT:
+      return true;
+
+    case RALT_T(US_Y):
+    case RALT_T(US_SLSH):
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 /*****************
@@ -214,8 +224,6 @@ enum combos {
   COMBO_LBRC,
   COMBO_LPRN,
 
-  COMBO_BSPC,
-  COMBO_DEL,
   COMBO_RPRN,
   COMBO_RBRC,
 
@@ -224,15 +232,15 @@ enum combos {
 };
 
 // left half combos
-const uint16_t PROGMEM combo_lbrc[] = {US_S, US_D, COMBO_END};
-const uint16_t PROGMEM combo_lprn[] = {US_D, US_F, COMBO_END};
+const uint16_t PROGMEM combo_lbrc[] = {LALT_T(US_S), LCTL_T(US_D), COMBO_END};
+const uint16_t PROGMEM combo_lprn[] = {LCTL_T(US_D), LSFT_T(US_F), COMBO_END};
 
 // right half combos
-const uint16_t PROGMEM combo_rprn[] = {US_J, US_K, COMBO_END};
-const uint16_t PROGMEM combo_rbrc[] = {US_K, US_L, COMBO_END};
+const uint16_t PROGMEM combo_rprn[] = {RSFT_T(US_J), RCTL_T(US_K), COMBO_END};
+const uint16_t PROGMEM combo_rbrc[] = {RCTL_T(US_K), LALT_T(US_L), COMBO_END};
 
 // mixed combos
-const uint16_t PROGMEM combo_caps_word[] = {US_F, US_J, COMBO_END};
+const uint16_t PROGMEM combo_caps_word[] = {LSFT_T(US_F), RSFT_T(US_J), COMBO_END};
 const uint16_t PROGMEM combo_media[] = {KC_LOWER, KC_RAISE, COMBO_END};
 
 combo_t key_combos[] = {
@@ -330,9 +338,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
          X_LT       US_Q,            US_W,            US_E,            US_R,            US_T,                X_CT       US_Z,            US_U,            US_I,            US_O,            US_P,                X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       HRML(US_A,       US_S,            US_D,            US_F),           US_G,                X_CM       US_H,            HRMR(US_J,       US_K,            US_L,            US_SCLN),            X_RM
+         X_LM       LGUI_T(US_A),    LALT_T(US_S),    LCTL_T(US_D),    LSFT_T(US_F),    US_G,                X_CM       US_H,            RSFT_T(US_J),    RCTL_T(US_K),    LALT_T(US_L),    RGUI_T(US_SCLN),     X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LB       MT_RALT_Y,       US_X,            US_C,            US_V,            US_B,                X_CB       US_N,            US_M,            US_COMM,         US_DOT,          MT_RALT_SLSH,        X_RB
+         X_LB       RALT_T(US_Y),    US_X,            US_C,            US_V,            US_B,                X_CB       US_N,            US_M,            US_COMM,         US_DOT,          RALT_T(US_SLSH),     X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
          X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_FUN_ENT,      KC_RAISE                                                                X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
@@ -346,9 +354,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
          X_LT       US_Q,            US_W,            US_F,            US_P,            US_B,                X_CT       US_J,            US_L,            US_U,            US_Z,            US_SCLN,             X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       HRML(US_A,       US_R,            US_S,            US_T),           US_G,                X_CM       US_M,            HRMR(US_N,       US_E,            US_I,            US_O),               X_RM
+         X_LM       LGUI_T(US_A),    LALT_T(US_R),    LCTL_T(US_S),    LSFT_T(US_T),    US_G,                X_CM       US_M,            RSFT_T(US_N),    RCTL_T(US_E),    LALT_T(US_I),    RGUI_T(US_O),     X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LB       MT_RALT_Y,       US_X,            US_C,            US_D,            US_V,                X_CB       US_K,            US_H,            US_COMM,         US_DOT,          MT_RALT_SLSH,        X_RB
+         X_LB       RALT_T(US_Y),    US_X,            US_C,            US_D,            US_V,                X_CB       US_K,            US_H,            US_COMM,         US_DOT,          RALT_T(US_SLSH),     X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
          X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_FUN_ENT,      KC_RAISE                                                                X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
