@@ -21,9 +21,11 @@ bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
     case QK_ONE_SHOT_MOD ... QK_ONE_SHOT_MOD_MAX:
       return true;
 
+    case C(US_Y):
     case C(US_X):
     case C(US_C):
     case C(US_V):
+    case C(US_Z):
       return true;
 
     default:
