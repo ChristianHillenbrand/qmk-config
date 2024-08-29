@@ -1,4 +1,5 @@
-SRC += funcs.c
+SRC += features/achordion.c \
+       funcs.c
 
 CAPS_WORD_ENABLE = yes
 COMBO_ENABLE = yes

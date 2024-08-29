@@ -1,21 +1,17 @@
 #pragma once
 
+#include "config.h"
 #include QMK_KEYBOARD_H
+
+#include <keymap_us_extended.h>
+
+#include "features/achordion.h"
 
 #include "extra_keys.h"
 #include "funcs.h"
 #include "layers.h"
 
-#include <keymap_us_extended.h>
-
-#define IDLE_MS 100
-
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
-
-#define GET_TAP_KEYCODE(kc) ((kc)&0xFF)
-#define IS_TYPING(kc) ( \
-  ((kc) <= KC_Z || (kc) == KC_SPC) && \
-  (last_input_activity_elapsed() < IDLE_MS))
 
 /**********************
  * CAPS WORD SETTINGS *
@@ -70,11 +66,16 @@ enum custom_keycodes {
 bool lower_pressed = false;
 bool raise_pressed = false;
 
+bool is_typing(uint16_t keycode) {
+  return (keycode <= US_Z || keycode == KC_SPC) &&
+    (last_input_activity_elapsed() < 100);
+}
+
 bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
   static uint16_t prev_keycode;
   static bool is_pressed[UINT8_MAX];
 
-  const uint8_t tap_keycode = GET_TAP_KEYCODE(keycode);
+  const uint8_t tap_keycode = keycode & 0xFF;
 
   switch (keycode) {
     case KC_LOWER:
@@ -86,8 +87,16 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
       break;
 
     case LT_MEDIA_SPC:
+    case LGUI_T(US_A):
+    case LALT_T(US_S):
+    case LCTL_T(US_D):
+    case LSFT_T(US_F):
+    case RSFT_T(US_J):
+    case RCTL_T(US_K):
+    case LALT_T(US_L):
+    case RGUI_T(US_SCLN):
     {
-      if (record->event.pressed && IS_TYPING(prev_keycode)) {
+      if (record->event.pressed && is_typing(prev_keycode)) {
         record->keycode = tap_keycode;
         is_pressed[tap_keycode] = true;
       }
@@ -110,8 +119,13 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-  if (!process_record_user_special(keycode, record))
+  if (!process_achordion(keycode, record)) {
     return false;
+  }
+
+  if (!process_record_user_special(keycode, record)) {
+    return false;
+  }
 
   switch (keycode) {
     case KC_LOWER:
@@ -165,6 +179,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   return true;
 }
 
+void matrix_scan_user(void) {
+  achordion_task();
+}
+
+uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
+  switch (tap_hold_keycode) {
+    case KC_LOWER:
+    case KC_RAISE:
+    case LT_MEDIA_SPC:
+    case LT_FUN_ENT:
+      return 0;
+
+    default:
+      return 1000;
+  }
+}
+
+bool achordion_eager_mod(uint8_t mod) {
+  return true;
+}
+
 /*********************
  * TAP HOLD SETTINGS *
  *********************/
@@ -176,15 +211,19 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
   {
     case KC_LOWER:
     case KC_RAISE:
-      return true;
-
     case LT_MEDIA_SPC:
     case LT_FUN_ENT:
-      return true;
-
+    case LGUI_T(US_A):
+    case LALT_T(US_S):
+    case LCTL_T(US_D):
+    case LSFT_T(US_F):
+    case RSFT_T(US_J):
+    case RCTL_T(US_K):
+    case LALT_T(US_L):
+    case RGUI_T(US_SCLN):
     case RALT_T(US_Y):
     case RALT_T(US_SLSH):
-      return true;
+      return 0;
 
     default:
       return false;
