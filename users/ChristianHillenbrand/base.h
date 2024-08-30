@@ -11,7 +11,18 @@
 #include "funcs.h"
 #include "layers.h"
 
+#define REQUIRE_PRIOR_IDLE_MS 150
+
+#define HRL (MATRIX_ROWS / 2 - 3) // home row left
+#define HRR (MATRIX_ROWS - 3)     // home row right
+
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
+
+bool is_hrm(uint16_t keycode, keyrecord_t* record) {
+  return IS_QK_MOD_TAP(keycode) &&
+    (record->event.key.row == HRL ||
+     record->event.key.row == HRR);
+}
 
 /**********************
  * CAPS WORD SETTINGS *
@@ -66,53 +77,26 @@ enum custom_keycodes {
 bool lower_pressed = false;
 bool raise_pressed = false;
 
-bool is_typing(uint16_t keycode) {
-  return (keycode <= US_Z || keycode == KC_SPC) &&
-    (last_input_activity_elapsed() < 100);
-}
-
-bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
-  static uint16_t prev_keycode;
+bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
 
   const uint8_t tap_keycode = keycode & 0xFF;
 
-  switch (keycode) {
-    case KC_LOWER:
-      lower_pressed = record->event.pressed;
-      break;
-
-    case KC_RAISE:
-      raise_pressed = record->event.pressed;
-      break;
-
-    case LT_MEDIA_SPC:
-    case LGUI_T(US_A):
-    case LALT_T(US_S):
-    case LCTL_T(US_D):
-    case LSFT_T(US_F):
-    case RSFT_T(US_J):
-    case RCTL_T(US_K):
-    case LALT_T(US_L):
-    case RGUI_T(US_SCLN):
-    {
-      if (record->event.pressed && is_typing(prev_keycode)) {
-        record->keycode = tap_keycode;
-        is_pressed[tap_keycode] = true;
-      }
-      else if (!record->event.pressed && is_pressed[tap_keycode]) {
-        record->keycode = tap_keycode;
-        is_pressed[tap_keycode] = false;
-      }
-    }
-    break;
-
-    default:
-      break;
+  if (keycode == KC_LOWER) {
+    lower_pressed = record->event.pressed;
+  } else if (keycode == KC_RAISE) {
+    raise_pressed = record->event.pressed;
   }
 
-  if (record->event.pressed) {
-    prev_keycode = tap_keycode;
+  if (is_hrm(keycode, record) || keycode == LT_MEDIA_SPC) {
+    if (record->event.pressed && last_input_activity_elapsed() < REQUIRE_PRIOR_IDLE_MS) {
+      record->keycode = tap_keycode;
+      is_pressed[tap_keycode] = true;
+    }
+    else if (!record->event.pressed && is_pressed[tap_keycode]) {
+      record->keycode = tap_keycode;
+      is_pressed[tap_keycode] = false;
+    }
   }
 
   return true;
@@ -183,17 +167,11 @@ void matrix_scan_user(void) {
   achordion_task();
 }
 
-uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
-  switch (tap_hold_keycode) {
-    case KC_LOWER:
-    case KC_RAISE:
-    case LT_MEDIA_SPC:
-    case LT_FUN_ENT:
-      return 0;
-
-    default:
-      return 1000;
+bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record, uint16_t other_keycode, keyrecord_t* other_record) {
+  if (!is_hrm(tap_hold_keycode, tap_hold_record)) {
+    return true;
   }
+  return achordion_opposite_hands(tap_hold_record, other_record);
 }
 
 bool achordion_eager_mod(uint8_t mod) {
@@ -205,28 +183,17 @@ bool achordion_eager_mod(uint8_t mod) {
  *********************/
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  // only allow permissive holds explicitly so
-  // they won't be activated for one shot mods
-  switch (keycode)
-  {
-    case KC_LOWER:
-    case KC_RAISE:
+  return true;
+}
+
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
     case LT_MEDIA_SPC:
     case LT_FUN_ENT:
-    case LGUI_T(US_A):
-    case LALT_T(US_S):
-    case LCTL_T(US_D):
-    case LSFT_T(US_F):
-    case RSFT_T(US_J):
-    case RCTL_T(US_K):
-    case LALT_T(US_L):
-    case RGUI_T(US_SCLN):
-    case RALT_T(US_Y):
-    case RALT_T(US_SLSH):
-      return 0;
+      return TAPPING_TERM;
 
     default:
-      return false;
+      return TAPPING_TERM;
   }
 }
 
@@ -234,23 +201,26 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
  * KEY OVERRIDES *
  *****************/
 
+
+const key_override_t shift_esc = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, KC_TILD);
 const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, US_LPRN, US_LABK);
 const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, KC_RPRN, US_RABK);
 
 const key_override_t ralt_a = ko_make_basic(MOD_BIT_RALT, US_A, US_ADIA);
+const key_override_t ralt_a_ = ko_make_basic(MOD_BIT_RALT, LGUI_T(US_A), US_ADIA);
 const key_override_t ralt_o = ko_make_basic(MOD_BIT_RALT, US_O, US_ODIA);
 const key_override_t ralt_u = ko_make_basic(MOD_BIT_RALT, US_U, US_UDIA);
-const key_override_t ralt_s = ko_make_basic(MOD_BIT_RALT, US_S, US_SS);
 const key_override_t ralt_e = ko_make_basic(MOD_BIT_RALT, US_E, US_EURO);
 
 const key_override_t** key_overrides = (const key_override_t* []){
+  &shift_esc,
   &shift_lprn,
   &shift_rprn,
 
   &ralt_a,
+  &ralt_a_,
   &ralt_o,
   &ralt_u,
-  &ralt_s,
   &ralt_e,
   NULL
 };
@@ -393,7 +363,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
          X_LT       US_Q,            US_W,            US_F,            US_P,            US_B,                X_CT       US_J,            US_L,            US_U,            US_Z,            US_SCLN,             X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
-         X_LM       LGUI_T(US_A),    LALT_T(US_R),    LCTL_T(US_S),    LSFT_T(US_T),    US_G,                X_CM       US_M,            RSFT_T(US_N),    RCTL_T(US_E),    LALT_T(US_I),    RGUI_T(US_O),     X_RM
+         X_LM       LGUI_T(US_A),    LALT_T(US_R),    LCTL_T(US_S),    LSFT_T(US_T),    US_G,                X_CM       US_M,            RSFT_T(US_N),    RCTL_T(US_E),    LALT_T(US_I),    RGUI_T(US_O),        X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       RALT_T(US_Y),    US_X,            US_C,            US_D,            US_V,                X_CB       US_K,            US_H,            US_COMM,         US_DOT,          RALT_T(US_SLSH),     X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
@@ -445,7 +415,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       US_BSLS,         US_1,            US_2,            US_3,            US_QUOT,             X_CB       _______,         _______,         _______,         _______,         TG(L_MOUSE),         X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          US_0,            KC_GRV,              X_CH       _______,         _______                                                                 X_RH
+         X_LH                                                          US_0,            _______,             X_CH       _______,         _______                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
@@ -461,7 +431,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       US_PIPE,         US_EXLM,         US_AT,           US_HASH,         US_DQUO,             X_CB       _______,         _______,         _______,         _______,         TG(L_MOUSE),         X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          US_RPRN,         KC_TILD,             X_CH       _______,         _______                                                                 X_RH
+         X_LH                                                          US_RPRN,         _______,             X_CH       _______,         _______                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
