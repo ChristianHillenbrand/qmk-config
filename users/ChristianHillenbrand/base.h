@@ -12,16 +12,32 @@
 #include "layers.h"
 
 #define REQUIRE_PRIOR_IDLE_MS 150
+#define ACHORDION_TIMEOUT 1000
 
 #define HRL (MATRIX_ROWS / 2 - 3) // home row left
 #define HRR (MATRIX_ROWS - 3)     // home row right
 
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
-bool is_hrm(uint16_t keycode, keyrecord_t* record) {
+/*********************
+ * GENERAL FUNCTIONS *
+ *********************/
+
+bool IS_TYPING(uint16_t keycode)
+{
+  const uint8_t tap_keycode = keycode & 0xFF;
+  return (tap_keycode <= KC_Z || tap_keycode == KC_SPC) &&
+    last_input_activity_elapsed() < REQUIRE_PRIOR_IDLE_MS;
+}
+
+bool IS_HRM(uint16_t keycode, keyrecord_t* record) {
   return IS_QK_MOD_TAP(keycode) &&
     (record->event.key.row == HRL ||
      record->event.key.row == HRR);
+}
+
+bool IS_SPACE(uint16_t keycode) {
+  return (keycode & 0xFF) == KC_SPC;
 }
 
 /**********************
@@ -79,6 +95,7 @@ bool raise_pressed = false;
 
 bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
+  static uint16_t prev_keycode;
 
   const uint8_t tap_keycode = keycode & 0xFF;
 
@@ -88,15 +105,16 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
     raise_pressed = record->event.pressed;
   }
 
-  if (is_hrm(keycode, record) || keycode == LT_MEDIA_SPC) {
-    if (record->event.pressed && last_input_activity_elapsed() < REQUIRE_PRIOR_IDLE_MS) {
+  if (record->event.pressed) {
+    if ((IS_HRM(keycode, record) || IS_SPACE(keycode)) && IS_TYPING(prev_keycode)) {
       record->keycode = tap_keycode;
       is_pressed[tap_keycode] = true;
     }
-    else if (!record->event.pressed && is_pressed[tap_keycode]) {
-      record->keycode = tap_keycode;
-      is_pressed[tap_keycode] = false;
-    }
+    prev_keycode = keycode;
+  }
+  else if (is_pressed[tap_keycode]) {
+    record->keycode = tap_keycode;
+    is_pressed[tap_keycode] = false;
   }
 
   return true;
@@ -168,10 +186,17 @@ void matrix_scan_user(void) {
 }
 
 bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record, uint16_t other_keycode, keyrecord_t* other_record) {
-  if (!is_hrm(tap_hold_keycode, tap_hold_record)) {
+  if (!IS_HRM(tap_hold_keycode, tap_hold_record)) {
     return true;
   }
   return achordion_opposite_hands(tap_hold_record, other_record);
+}
+
+uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
+  if (IS_QK_LAYER_TAP(tap_hold_keycode)) {
+    return 0;
+  }
+  return ACHORDION_TIMEOUT;
 }
 
 bool achordion_eager_mod(uint8_t mod) {
@@ -183,24 +208,12 @@ bool achordion_eager_mod(uint8_t mod) {
  *********************/
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  return true;
-}
-
-uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case LT_MEDIA_SPC:
-    case LT_FUN_ENT:
-      return TAPPING_TERM;
-
-    default:
-      return TAPPING_TERM;
-  }
+  return IS_QK_MOD_TAP(keycode) || IS_QK_LAYER_TAP(keycode);
 }
 
 /*****************
  * KEY OVERRIDES *
  *****************/
-
 
 const key_override_t shift_esc = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, KC_TILD);
 const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, US_LPRN, US_LABK);
@@ -254,12 +267,12 @@ const uint16_t PROGMEM combo_media[] = {KC_LOWER, KC_RAISE, COMBO_END};
 
 combo_t key_combos[] = {
   // left half combos
-  [COMBO_LBRC] = COMBO(combo_lbrc, US_LBRC),
-  [COMBO_LPRN] = COMBO(combo_lprn, US_LPRN),
+  [COMBO_LBRC] = COMBO(combo_lbrc, MT(MOD_LALT | MOD_LCTL, US_LBRC)),
+  [COMBO_LPRN] = COMBO(combo_lprn, MT(MOD_LCTL | MOD_LSFT, US_LPRN)),
 
   // right half combos
-  [COMBO_RPRN] = COMBO(combo_rprn, US_RPRN),
-  [COMBO_RBRC] = COMBO(combo_rbrc, US_RBRC),
+  [COMBO_RPRN] = COMBO(combo_rprn, MT(MOD_RCTL | MOD_RSFT, US_RPRN)),
+  [COMBO_RBRC] = COMBO(combo_rbrc, MT(MOD_LALT | MOD_RCTL, US_RBRC)),
 
   // mixed combos
   [COMBO_CAPS_WORD] = COMBO(combo_caps_word, CW_TOGG),
