@@ -60,16 +60,16 @@ void render_layer(void) {
       oled_write_P(PSTR("MEDIA"), false);
       break;
 
+    case L_FUN:
+      oled_write_P(PSTR(" FUN "), false);
+      break;
+
     case L_NUM:
       oled_write_P(PSTR(" NUM "), false);
       break;
 
     case L_SYM:
       oled_write_P(PSTR(" SYM "), false);
-      break;
-
-    case L_FUN:
-      oled_write_P(PSTR(" FUN "), false);
       break;
 
     case L_MOUSE:

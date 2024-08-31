@@ -12,7 +12,7 @@
 #include "layers.h"
 
 #define REQUIRE_PRIOR_IDLE_MS 150
-#define ACHORDION_TIMEOUT 1000
+#define ACHORDION_TIMEOUT 500
 
 #define HRL (MATRIX_ROWS / 2 - 3) // home row left
 #define HRR (MATRIX_ROWS - 3)     // home row right
@@ -30,7 +30,7 @@ bool IS_HRM(uint16_t keycode, keyrecord_t* record) {
 }
 
 bool IS_ALPHA(uint16_t keycode) {
-  return (keycode & 0xFF) <= KC_Z;
+  return (keycode & 0xFF) >= US_A && (keycode & 0xFF) <= US_Z;
 }
 
 bool IS_SPACE(uint16_t keycode) {
@@ -215,10 +215,10 @@ void matrix_scan_user(void) {
 }
 
 bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record, uint16_t other_keycode, keyrecord_t* other_record) {
-  if (!IS_HRM(tap_hold_keycode, tap_hold_record)) {
-    return true;
+  if (IS_HRM(tap_hold_keycode, tap_hold_record)) {
+    return achordion_opposite_hands(tap_hold_record, other_record);
   }
-  return achordion_opposite_hands(tap_hold_record, other_record);
+  return true;
 }
 
 uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
@@ -273,8 +273,7 @@ enum combos {
   COMBO_RPRN,
   COMBO_RBRC,
 
-  COMBO_CAPS_WORD,
-  COMBO_MEDIA
+  COMBO_CAPS_WORD
 };
 
 // left half combos
