@@ -23,21 +23,24 @@
  * GENERAL FUNCTIONS *
  *********************/
 
-bool IS_TYPING(uint16_t keycode)
-{
-  const uint8_t tap_keycode = keycode & 0xFF;
-  return (tap_keycode <= KC_Z || tap_keycode == KC_SPC) &&
-    last_input_activity_elapsed() < REQUIRE_PRIOR_IDLE_MS;
-}
-
 bool IS_HRM(uint16_t keycode, keyrecord_t* record) {
   return IS_QK_MOD_TAP(keycode) &&
     (record->event.key.row == HRL ||
      record->event.key.row == HRR);
 }
 
+bool IS_ALPHA(uint16_t keycode) {
+  return (keycode & 0xFF) <= KC_Z;
+}
+
 bool IS_SPACE(uint16_t keycode) {
   return (keycode & 0xFF) == KC_SPC;
+}
+
+bool IS_TYPING(uint16_t keycode)
+{
+  return (IS_ALPHA(keycode) || IS_SPACE(keycode)) &&
+    last_input_activity_elapsed() < REQUIRE_PRIOR_IDLE_MS;
 }
 
 /**********************
