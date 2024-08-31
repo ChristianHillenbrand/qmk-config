@@ -43,6 +43,10 @@ bool IS_TYPING(uint16_t keycode)
     last_input_activity_elapsed() < REQUIRE_PRIOR_IDLE_MS;
 }
 
+bool SHIFT_PRESSED(void) {
+  return (get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT;
+}
+
 /**********************
  * CAPS WORD SETTINGS *
  **********************/
@@ -177,6 +181,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         return true;
       }
 
+    case MT(MOD_LCTL | MOD_LSFT, US_LPRN):
+      if (record->tap.count && record->event.pressed) {
+        if (SHIFT_PRESSED()) {
+          tap_code16(US_LABK);
+        } else {
+          tap_code16(US_LPRN);
+        }
+        return false;
+      }
+      break;
+
+    case MT(MOD_RCTL | MOD_RSFT, US_RPRN):
+      if (record->tap.count && record->event.pressed) {
+        if (SHIFT_PRESSED()) {
+          tap_code16(US_RABK);
+        } else {
+          tap_code16(US_RPRN);
+        }
+        return false;
+      }
+      break;
+
     default:
       break;
   }
@@ -218,26 +244,20 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
  * KEY OVERRIDES *
  *****************/
 
-const key_override_t shift_esc = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, KC_TILD);
-const key_override_t shift_lprn = ko_make_basic(MOD_MASK_SHIFT, US_LPRN, US_LABK);
-const key_override_t shift_rprn = ko_make_basic(MOD_MASK_SHIFT, KC_RPRN, US_RABK);
-
 const key_override_t ralt_a = ko_make_basic(MOD_BIT_RALT, US_A, US_ADIA);
 const key_override_t ralt_a_ = ko_make_basic(MOD_BIT_RALT, LGUI_T(US_A), US_ADIA);
 const key_override_t ralt_o = ko_make_basic(MOD_BIT_RALT, US_O, US_ODIA);
 const key_override_t ralt_u = ko_make_basic(MOD_BIT_RALT, US_U, US_UDIA);
 const key_override_t ralt_e = ko_make_basic(MOD_BIT_RALT, US_E, US_EURO);
+const key_override_t shift_esc = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, KC_TILD);
 
 const key_override_t** key_overrides = (const key_override_t* []){
-  &shift_esc,
-  &shift_lprn,
-  &shift_rprn,
-
   &ralt_a,
   &ralt_a_,
   &ralt_o,
   &ralt_u,
   &ralt_e,
+  &shift_esc,
   NULL
 };
 
@@ -265,8 +285,7 @@ const uint16_t PROGMEM combo_rprn[] = {RSFT_T(US_J), RCTL_T(US_K), COMBO_END};
 const uint16_t PROGMEM combo_rbrc[] = {RCTL_T(US_K), LALT_T(US_L), COMBO_END};
 
 // mixed combos
-const uint16_t PROGMEM combo_caps_word[] = {LSFT_T(US_F), RSFT_T(US_J), COMBO_END};
-const uint16_t PROGMEM combo_media[] = {KC_LOWER, KC_RAISE, COMBO_END};
+const uint16_t PROGMEM combo_caps_word[] = {KC_LOWER, KC_RAISE, COMBO_END};
 
 combo_t key_combos[] = {
   // left half combos
@@ -278,8 +297,7 @@ combo_t key_combos[] = {
   [COMBO_RBRC] = COMBO(combo_rbrc, MT(MOD_LALT | MOD_RCTL, US_RBRC)),
 
   // mixed combos
-  [COMBO_CAPS_WORD] = COMBO(combo_caps_word, CW_TOGG),
-  [COMBO_MEDIA] = COMBO(combo_media, MO(L_MEDIA))
+  [COMBO_CAPS_WORD] = COMBO(combo_caps_word, CW_TOGG)
 };
 
 uint8_t combo_ref_from_layer(uint8_t layer){
