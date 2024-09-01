@@ -11,36 +11,47 @@
 #include "funcs.h"
 #include "layers.h"
 
-#define HRL (MATRIX_ROWS / 2 - 3) // home row left
-#define HRR (MATRIX_ROWS - 3)     // home row right
-
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
 /*********************
  * GENERAL FUNCTIONS *
  *********************/
 
-bool IS_HRM(uint16_t keycode) {
+bool shift_pressed(void) {
+  return (get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT;
+}
+
+bool is_hrm(uint16_t keycode) {
   return IS_QK_MOD_TAP(keycode) &&
     QK_MOD_TAP_GET_MODS(keycode) != MOD_RALT;
 }
 
-bool IS_ALPHA(uint16_t keycode) {
-  return (keycode & 0xFF) >= US_A && (keycode & 0xFF) <= US_Z;
-}
-
-bool IS_SPACE(uint16_t keycode) {
+bool is_space(uint16_t keycode) {
   return (keycode & 0xFF) == KC_SPC;
 }
 
-bool IS_TYPING(uint16_t keycode)
+bool is_typing_(uint16_t keycode)
 {
-  return (IS_ALPHA(keycode) || IS_SPACE(keycode)) &&
-    last_input_activity_elapsed() < REQUIRE_PRIOR_IDLE_MS;
+  switch(keycode & 0xFF) {
+    case US_A ... US_Z:
+    case US_ADIA:
+    case US_ODIA:
+    case US_UDIA:
+    case US_SS:
+    case KC_SPC:
+    case KC_LSFT:
+    case KC_RSFT:
+      return true;
+
+    default:
+      return false;
+  }
 }
 
-bool SHIFT_PRESSED(void) {
-  return (get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT;
+bool is_typing(uint16_t keycode, keyrecord_t* record)
+{
+  return is_typing_(keycode) ||
+    (record->tap.count && is_typing_(keycode & 0xFF));
 }
 
 /**********************
@@ -88,10 +99,10 @@ enum custom_keycodes {
 bool lower_pressed = false;
 bool raise_pressed = false;
 
+uint16_t idle_timer;
+
 bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
-  static uint16_t prev_keycode;
-
   const uint8_t tap_keycode = keycode & 0xFF;
 
   if (keycode == KC_LOWER) {
@@ -101,11 +112,11 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   }
 
   if (record->event.pressed) {
-    if ((IS_HRM(keycode, record) || IS_SPACE(keycode)) && IS_TYPING(prev_keycode)) {
+    if ((is_hrm(keycode) || is_space(keycode)) &&
+      timer_elapsed(idle_timer) < QUICK_TAP_TERM) {
       record->keycode = tap_keycode;
       is_pressed[tap_keycode] = true;
     }
-    prev_keycode = keycode;
   }
   else if (is_pressed[tap_keycode]) {
     record->keycode = tap_keycode;
@@ -171,7 +182,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
     case MT(MOD_LCTL | MOD_LSFT, US_LPRN):
       if (record->tap.count && record->event.pressed) {
-        if (SHIFT_PRESSED()) {
+        if (shift_pressed()) {
           tap_code16(US_LABK);
         } else {
           tap_code16(US_LPRN);
@@ -182,7 +193,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
     case MT(MOD_RCTL | MOD_RSFT, US_RPRN):
       if (record->tap.count && record->event.pressed) {
-        if (SHIFT_PRESSED()) {
+        if (shift_pressed()) {
           tap_code16(US_RABK);
         } else {
           tap_code16(US_RPRN);
@@ -195,6 +206,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       break;
   }
 
+  if (record->event.pressed && is_typing(keycode, record)) {
+    idle_timer = timer_read();
+  }
+
   return true;
 }
 
@@ -203,7 +218,7 @@ void matrix_scan_user(void) {
 }
 
 bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record, uint16_t other_keycode, keyrecord_t* other_record) {
-  if (IS_HRM(tap_hold_keycode)) {
+  if (is_hrm(tap_hold_keycode)) {
     return achordion_opposite_hands(tap_hold_record, other_record);
   }
   return true;
