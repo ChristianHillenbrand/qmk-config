@@ -91,6 +91,7 @@ bool raise_pressed = false;
 
 bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
+  static uint16_t prev_keycode;
 
   const uint8_t tap_keycode = keycode & 0xFF;
 
