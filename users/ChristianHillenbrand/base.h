@@ -172,7 +172,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       } else{
         // hold -> nav layer
         if (record->event.pressed) {
-          del_oneshot_mods(MOD_BIT(KC_LSFT));
           layer_on(L_NAV);
         } else {
           layer_off(L_NAV);
@@ -194,7 +193,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       } else {
         // hold -> num layer
         if (record->event.pressed) {
-          del_oneshot_mods(MOD_BIT(KC_RSFT));
           layer_on(L_NUM);
         } else {
           layer_off(L_NUM);
@@ -255,6 +253,15 @@ uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
 
 bool achordion_eager_mod(uint8_t mod) {
   return true;
+}
+
+/*********************
+ * TAP HOLD SETTINGS *
+ *********************/
+
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+  return (is_left_key(record) && !lower_pressed) ||
+    (is_right_key(record) && !raise_pressed);
 }
 
 /*****************
