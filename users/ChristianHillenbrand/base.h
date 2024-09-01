@@ -20,10 +20,9 @@
  * GENERAL FUNCTIONS *
  *********************/
 
-bool IS_HRM(uint16_t keycode, keyrecord_t* record) {
+bool IS_HRM(uint16_t keycode) {
   return IS_QK_MOD_TAP(keycode) &&
-    (record->event.key.row == HRL ||
-     record->event.key.row == HRR);
+    QK_MOD_TAP_GET_MODS(keycode) != MOD_RALT;
 }
 
 bool IS_ALPHA(uint16_t keycode) {
@@ -204,7 +203,7 @@ void matrix_scan_user(void) {
 }
 
 bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record, uint16_t other_keycode, keyrecord_t* other_record) {
-  if (IS_HRM(tap_hold_keycode, tap_hold_record)) {
+  if (IS_HRM(tap_hold_keycode)) {
     return achordion_opposite_hands(tap_hold_record, other_record);
   }
   return true;
