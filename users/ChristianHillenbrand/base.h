@@ -13,6 +13,11 @@
 
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
+bool lower_pressed = false;
+bool raise_pressed = false;
+
+uint16_t idle_timer;
+
 /*********************
  * GENERAL FUNCTIONS *
  *********************/
@@ -21,13 +26,35 @@ bool shift_pressed(void) {
   return (get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT;
 }
 
+bool is_left_key(keyrecord_t* record) {
+  return record->event.key.row < MATRIX_ROWS / 2;
+}
+
+bool is_right_key(keyrecord_t* record) {
+  return !is_left_key(record);
+}
+
 bool is_hrm(uint16_t keycode) {
   return IS_QK_MOD_TAP(keycode) &&
     QK_MOD_TAP_GET_MODS(keycode) != MOD_RALT;
 }
 
+bool is_left_hrm(uint16_t keycode, keyrecord_t* record) {
+  return is_hrm(keycode) && is_left_key(record);
+}
+
+bool is_right_hrm(uint16_t keycode, keyrecord_t* record) {
+  return is_hrm(keycode) && is_right_key(record);
+}
+
 bool is_space(uint16_t keycode) {
   return (keycode & 0xFF) == KC_SPC;
+}
+
+bool is_quick_tap_key(uint16_t keycode, keyrecord_t* record) {
+  return (is_left_hrm(keycode, record) && !lower_pressed) ||
+    (is_right_hrm(keycode, record) && !raise_pressed) ||
+     is_space(keycode);
 }
 
 bool is_typing_(uint16_t keycode)
@@ -96,11 +123,6 @@ enum custom_keycodes {
 #define LT_MEDIA_SPC LT(L_MEDIA, KC_SPC)
 #define LT_FUN_ENT LT(L_FUN, KC_ENT)
 
-bool lower_pressed = false;
-bool raise_pressed = false;
-
-uint16_t idle_timer;
-
 bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
   const uint8_t tap_keycode = keycode & 0xFF;
@@ -112,7 +134,7 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   }
 
   if (record->event.pressed) {
-    if ((is_hrm(keycode) || is_space(keycode)) &&
+    if (is_quick_tap_key(keycode, record) &&
       timer_elapsed(idle_timer) < QUICK_TAP_TERM) {
       record->keycode = tap_keycode;
       is_pressed[tap_keycode] = true;
