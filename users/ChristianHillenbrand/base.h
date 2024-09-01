@@ -221,15 +221,6 @@ bool achordion_eager_mod(uint8_t mod) {
   return true;
 }
 
-/*********************
- * TAP HOLD SETTINGS *
- *********************/
-
-bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  // explicitly do not set permissive hold for one shot mods
-  return IS_QK_MOD_TAP(keycode) || IS_QK_LAYER_TAP(keycode);
-}
-
 /*****************
  * KEY OVERRIDES *
  *****************/
