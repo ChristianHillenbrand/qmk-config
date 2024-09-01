@@ -11,9 +11,6 @@
 #include "funcs.h"
 #include "layers.h"
 
-#define REQUIRE_PRIOR_IDLE_MS 150
-#define ACHORDION_TIMEOUT 500
-
 #define HRL (MATRIX_ROWS / 2 - 3) // home row left
 #define HRR (MATRIX_ROWS - 3)     // home row right
 
@@ -53,7 +50,7 @@ bool SHIFT_PRESSED(void) {
 
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
-    case KC_A ... KC_Z:
+    case US_A ... US_Z:
     case US_ADIA:
     case US_ODIA:
     case US_UDIA:
@@ -83,14 +80,6 @@ enum custom_keycodes {
   KC_MAX,
 };
 
-#ifndef DRGSCRL
-  #define DRGSCRL KC_TRNS
-#endif
-
-#ifndef SNIPING
-  #define SNIPING KC_TRNS
-#endif
-
 #define KC_LOWER LT(0, KC_LOWER_)
 #define KC_RAISE LT(0, KC_RAISE_)
 
@@ -102,7 +91,6 @@ bool raise_pressed = false;
 
 bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
-  static uint16_t prev_keycode;
 
   const uint8_t tap_keycode = keycode & 0xFF;
 
