@@ -1,3 +1,5 @@
+#pragma once
+
 // number row
 #ifndef X_NR
   #define X_NR

@@ -271,14 +271,16 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 const key_override_t ralt_a = ko_make_basic(MOD_BIT_RALT, US_A, US_ADIA);
 const key_override_t ralt_a_ = ko_make_basic(MOD_BIT_RALT, LGUI_T(US_A), US_ADIA);
 const key_override_t ralt_o = ko_make_basic(MOD_BIT_RALT, US_O, US_ODIA);
+const key_override_t ralt_o_ = ko_make_basic(MOD_BIT_RALT, RGUI_T(US_O), US_ODIA);
 const key_override_t ralt_u = ko_make_basic(MOD_BIT_RALT, US_U, US_UDIA);
 const key_override_t ralt_e = ko_make_basic(MOD_BIT_RALT, US_E, US_EURO);
 const key_override_t shift_esc = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, KC_TILD);
 
-const key_override_t** key_overrides = (const key_override_t* []){
+const key_override_t* key_overrides[] = {
   &ralt_a,
   &ralt_a_,
   &ralt_o,
+  &ralt_o_,
   &ralt_u,
   &ralt_e,
   &shift_esc,
