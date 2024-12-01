@@ -13,8 +13,8 @@
 
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
-bool lower_pressed = false;
-bool raise_pressed = false;
+bool left_lt = false;
+bool right_lt = false;
 
 uint16_t idle_timer;
 
@@ -32,6 +32,18 @@ bool is_left_key(keyrecord_t* record) {
 
 bool is_right_key(keyrecord_t* record) {
   return !is_left_key(record);
+}
+
+bool is_lt(uint16_t keycode) {
+  return IS_QK_LAYER_TAP(keycode);
+}
+
+bool is_left_lt(uint16_t keycode, keyrecord_t* record) {
+  return is_lt(keycode) && is_left_key(record);
+}
+
+bool is_right_lt(uint16_t keycode, keyrecord_t* record) {
+  return is_lt(keycode) && is_right_key(record);
 }
 
 bool is_hrm(uint16_t keycode) {
@@ -52,8 +64,8 @@ bool is_space(uint16_t keycode) {
 }
 
 bool is_quick_tap_key(uint16_t keycode, keyrecord_t* record) {
-  return (is_left_hrm(keycode, record) && !lower_pressed) ||
-    (is_right_hrm(keycode, record) && !raise_pressed) ||
+  return (is_left_hrm(keycode, record) && !left_lt) ||
+    (is_right_hrm(keycode, record) && !right_lt) ||
      is_space(keycode);
 }
 
@@ -127,10 +139,10 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
   const uint8_t tap_keycode = keycode & 0xFF;
 
-  if (keycode == KC_LOWER) {
-    lower_pressed = record->event.pressed;
-  } else if (keycode == KC_RAISE) {
-    raise_pressed = record->event.pressed;
+  if (is_left_lt(keycode, record)) {
+    left_lt = record->event.pressed;
+  } else if (is_right_lt(keycode, record)) {
+    right_lt = record->event.pressed;
   }
 
   if (record->event.pressed) {
@@ -260,8 +272,8 @@ bool achordion_eager_mod(uint8_t mod) {
  *********************/
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  return (is_left_key(record) && !lower_pressed) ||
-    (is_right_key(record) && !raise_pressed);
+  return (is_left_key(record) && !left_lt) ||
+    (is_right_key(record) && !right_lt);
 }
 
 /*****************
@@ -338,11 +350,11 @@ bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode
   switch (combo_index) {
     case COMBO_LBRC:
     case COMBO_LPRN:
-      return !lower_pressed;
+      return !left_lt;
 
     case COMBO_RPRN:
     case COMBO_RBRC:
-      return !raise_pressed;
+      return !right_lt;
 
     default:
       return true;
