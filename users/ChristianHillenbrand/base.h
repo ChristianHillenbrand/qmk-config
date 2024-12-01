@@ -408,6 +408,18 @@ tap_dance_action_t tap_dance_actions[] = {
 #define TD_QWRTY TD(TD_QWRTY_)
 #define TD_COLMK TD(TD_COLMK_)
 
+/***************
+ * KEY OPTIONS *
+ ***************/
+
+#ifndef DRGSCRL
+  #define DRGSCRL KC_TRNS
+#endif
+
+#ifndef SNIPING
+  #define SNIPING KC_TRNS
+#endif
+
 /**********
  * KEYMAP *
  **********/
