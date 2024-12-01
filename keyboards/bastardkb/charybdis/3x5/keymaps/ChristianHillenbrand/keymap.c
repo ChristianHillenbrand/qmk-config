@@ -1,6 +1,6 @@
 #include QMK_KEYBOARD_H
 
-#define X_LH KC_LCTL,
+#define X_LH KC_ESC,
 
 #include "base.h"
 

@@ -176,6 +176,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         if (record->event.pressed) {
           if (get_oneshot_mods() & MOD_BIT(KC_LSFT)) {
             del_oneshot_mods(MOD_BIT(KC_LSFT));
+#ifdef DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD
+              caps_word_on();
+            } else if (is_caps_word_on()) {
+              caps_word_off();
+#endif
           } else {
             add_oneshot_mods(MOD_BIT(KC_LSFT));
           }
@@ -197,6 +202,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         if (record->event.pressed) {
           if (get_oneshot_mods() & MOD_BIT(KC_RSFT)) {
             del_oneshot_mods(MOD_BIT(KC_RSFT));
+#ifdef DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD
+            caps_word_on();
+          } else if (is_caps_word_on()) {
+            caps_word_off();
+#endif
           } else {
             add_oneshot_mods(MOD_BIT(KC_RSFT));
           }
@@ -323,9 +333,6 @@ const uint16_t PROGMEM combo_lprn[] = {LCTL_T(US_D), LSFT_T(US_F), COMBO_END};
 const uint16_t PROGMEM combo_rprn[] = {RSFT_T(US_J), RCTL_T(US_K), COMBO_END};
 const uint16_t PROGMEM combo_rbrc[] = {RCTL_T(US_K), LALT_T(US_L), COMBO_END};
 
-// mixed combos
-const uint16_t PROGMEM combo_caps_word[] = {KC_LOWER, KC_RAISE, COMBO_END};
-
 combo_t key_combos[] = {
   // left half combos
   [COMBO_LBRC] = COMBO(combo_lbrc, MT(MOD_LALT | MOD_LCTL, US_LBRC)),
@@ -334,9 +341,6 @@ combo_t key_combos[] = {
   // right half combos
   [COMBO_RPRN] = COMBO(combo_rprn, MT(MOD_RCTL | MOD_RSFT, US_RPRN)),
   [COMBO_RBRC] = COMBO(combo_rbrc, MT(MOD_LALT | MOD_RCTL, US_RBRC)),
-
-  // mixed combos
-  [COMBO_CAPS_WORD] = COMBO(combo_caps_word, CW_TOGG)
 };
 
 uint8_t combo_ref_from_layer(uint8_t layer){
