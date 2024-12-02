@@ -6,5 +6,7 @@
 
 #define PERMISSIVE_HOLD_PER_KEY
 
+#define QUICK_TAP_TERM 170
+
 // custom settings
-#define ACHORDION_TIMEOUT 500
+#define ACHORDION_TIMEOUT 350
