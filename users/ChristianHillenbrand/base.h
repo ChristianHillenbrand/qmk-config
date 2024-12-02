@@ -34,16 +34,12 @@ bool is_right_key(keyrecord_t* record) {
   return !is_left_key(record);
 }
 
-bool is_lt(uint16_t keycode) {
-  return IS_QK_LAYER_TAP(keycode);
-}
-
 bool is_left_lt(uint16_t keycode, keyrecord_t* record) {
-  return is_lt(keycode) && is_left_key(record);
+  return IS_QK_LAYER_TAP(keycode) && is_left_key(record);
 }
 
 bool is_right_lt(uint16_t keycode, keyrecord_t* record) {
-  return is_lt(keycode) && is_right_key(record);
+  return IS_QK_LAYER_TAP(keycode) && is_right_key(record);
 }
 
 bool is_hrm(uint16_t keycode) {
@@ -123,17 +119,12 @@ bool caps_word_press_user(uint16_t keycode) {
  * CUSTOM KEYCODES *
  *******************/
 
-enum custom_keycodes {
-  KC_LOWER_ = SAFE_RANGE,
-  KC_RAISE_,
-  KC_MAX,
-};
+// layer left shift / layer right shift
+#define LLS(LAYER) LT(LAYER, KC_LSFT)
+#define LRS(LAYER) LT(LAYER, KC_RSFT)
 
-#define KC_LOWER LT(0, KC_LOWER_)
-#define KC_RAISE LT(0, KC_RAISE_)
-
-#define LT_MEDIA_SPC LT(L_MEDIA, KC_SPC)
-#define LT_FUN_ENT LT(L_FUN, KC_ENT)
+#define LT_FUN_SPC LT(L_FUN, KC_SPC)
+#define LT_SYM_ENT LT(L_SYM, KC_ENT)
 
 bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
@@ -169,10 +160,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     return false;
   }
 
-  switch (keycode) {
-    case KC_LOWER:
+  if (IS_QK_LAYER_TAP(keycode)) {
+    switch(QK_LAYER_TAP_GET_TAP_KEYCODE(keycode)) {
+      case KC_LSFT:
+      case KC_RSFT:
       if (record->tap.count) {
-        // tap -> one shot shift
         if (record->event.pressed) {
           if (get_oneshot_mods() & MOD_BIT(KC_LSFT)) {
             del_oneshot_mods(MOD_BIT(KC_LSFT));
@@ -186,42 +178,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
           }
         }
         return false;
-      } else{
-        // hold -> nav layer
-        if (record->event.pressed) {
-          layer_on(L_NAV);
-        } else {
-          layer_off(L_NAV);
         }
-        return true;
-      }
 
-    case KC_RAISE:
-      if (record->tap.count) {
-        // tap -> one shot shift
-        if (record->event.pressed) {
-          if (get_oneshot_mods() & MOD_BIT(KC_RSFT)) {
-            del_oneshot_mods(MOD_BIT(KC_RSFT));
-#ifdef DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD
-            caps_word_on();
-          } else if (is_caps_word_on()) {
-            caps_word_off();
-#endif
-          } else {
-            add_oneshot_mods(MOD_BIT(KC_RSFT));
-          }
-        }
-        return false;
-      } else {
-        // hold -> num layer
-        if (record->event.pressed) {
-          layer_on(L_NUM);
-        } else {
-          layer_off(L_NUM);
-        }
-        return true;
-      }
+      default:
+        break;
+    }
+  }
 
+  switch (keycode) {
     case MT(MOD_LCTL | MOD_LSFT, US_LPRN):
       if (record->tap.count && record->event.pressed) {
         if (shift_pressed()) {
@@ -520,7 +484,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       US_BSLS,         US_1,            US_2,            US_3,            US_QUOT,             X_CB       _______,         _______,         _______,         _______,         TG(L_MOUSE),         X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          US_0,            _______,             X_CH       _______,         _______                                                                 X_RH
+         X_LH                                                          US_0,            US_GRV,              X_CH       _______,         _______                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
@@ -536,7 +500,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       US_PIPE,         US_EXLM,         US_AT,           US_HASH,         US_DQUO,             X_CB       _______,         _______,         _______,         _______,         TG(L_MOUSE),         X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          US_RPRN,         _______,             X_CH       _______,         _______                                                                 X_RH
+         X_LH                                                          US_RPRN,         US_TILD,             X_CH       _______,         _______                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
