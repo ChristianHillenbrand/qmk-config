@@ -123,9 +123,6 @@ bool caps_word_press_user(uint16_t keycode) {
 #define LLS(LAYER) LT(LAYER, KC_LSFT)
 #define LRS(LAYER) LT(LAYER, KC_RSFT)
 
-#define LT_FUN_SPC LT(L_FUN, KC_SPC)
-#define LT_SYM_ENT LT(L_SYM, KC_ENT)
-
 bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
   static bool is_pressed[UINT8_MAX];
   const uint8_t tap_keycode = keycode & 0xFF;
@@ -160,32 +157,32 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     return false;
   }
 
-  if (IS_QK_LAYER_TAP(keycode)) {
-    switch(QK_LAYER_TAP_GET_TAP_KEYCODE(keycode)) {
-      case KC_LSFT:
-      case KC_RSFT:
-      if (record->tap.count) {
-        if (record->event.pressed) {
-          if (get_oneshot_mods() & MOD_BIT(KC_LSFT)) {
-            del_oneshot_mods(MOD_BIT(KC_LSFT));
-#ifdef DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD
-              caps_word_on();
-            } else if (is_caps_word_on()) {
-              caps_word_off();
-#endif
-          } else {
-            add_oneshot_mods(MOD_BIT(KC_LSFT));
-          }
-        }
-        return false;
-        }
-
-      default:
-        break;
-    }
-  }
-
   switch (keycode) {
+    case QK_LAYER_TAP ... QK_LAYER_TAP_MAX:
+      switch(QK_LAYER_TAP_GET_TAP_KEYCODE(keycode)) {
+        case KC_LSFT:
+        case KC_RSFT:
+          if (record->tap.count) {
+            if (record->event.pressed) {
+              if (get_oneshot_mods() & MOD_BIT(KC_LSFT)) {
+                del_oneshot_mods(MOD_BIT(KC_LSFT));
+#ifdef DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD
+                caps_word_on();
+              } else if (is_caps_word_on()) {
+                caps_word_off();
+#endif
+              } else {
+                add_oneshot_mods(MOD_BIT(KC_LSFT));
+              }
+            }
+            return false;
+          }
+
+        default:
+          break;
+      }
+      break;
+
     case MT(MOD_LCTL | MOD_LSFT, US_LPRN):
       if (record->tap.count && record->event.pressed) {
         if (shift_pressed()) {
@@ -254,6 +251,10 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
  * KEY OVERRIDES *
  *****************/
 
+#ifndef EXTRA_KEY_OVERRIDES
+  #define EXTRA_KEY_OVERRIDES
+#endif
+
 const key_override_t ralt_a = ko_make_basic(MOD_BIT_RALT, US_A, US_ADIA);
 const key_override_t ralt_a_ = ko_make_basic(MOD_BIT_RALT, LGUI_T(US_A), US_ADIA);
 const key_override_t ralt_o = ko_make_basic(MOD_BIT_RALT, US_O, US_ODIA);
@@ -261,7 +262,7 @@ const key_override_t ralt_o_ = ko_make_basic(MOD_BIT_RALT, RGUI_T(US_O), US_ODIA
 const key_override_t ralt_u = ko_make_basic(MOD_BIT_RALT, US_U, US_UDIA);
 const key_override_t ralt_e = ko_make_basic(MOD_BIT_RALT, US_E, US_EURO);
 const key_override_t ralt_e_ = ko_make_basic(MOD_BIT_RALT, RCTL_T(US_E), US_EURO);
-const key_override_t shift_esc = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, KC_TILD);
+const key_override_t shift_spc = ko_make_basic(MOD_MASK_SHIFT, LT(L_FUN, KC_SPC), KC_TAB);
 
 const key_override_t* key_overrides[] = {
   &ralt_a,
@@ -271,7 +272,8 @@ const key_override_t* key_overrides[] = {
   &ralt_u,
   &ralt_e,
   &ralt_e_,
-  &shift_esc,
+  &shift_spc,
+  EXTRA_KEY_OVERRIDES,
   NULL
 };
 
@@ -380,6 +382,22 @@ tap_dance_action_t tap_dance_actions[] = {
  * KEY OPTIONS *
  ***************/
 
+#ifndef LH0
+  #define LH0 LT(L_FUN, KC_SPC)
+#endif
+
+#ifndef LH1
+  #define LH1 LLS(L_NAV)
+#endif
+
+#ifndef RH0
+  #define RH0 LT(L_SYM, KC_ENT)
+#endif
+
+#ifndef RH1
+  #define RH1 LRS(L_NUM)
+#endif
+
 #ifndef DRGSCRL
   #define DRGSCRL KC_TRNS
 #endif
@@ -404,7 +422,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       RALT_T(US_Y),    US_X,            US_C,            US_V,            US_B,                X_CB       US_N,            US_M,            US_COMM,         US_DOT,          RALT_T(US_SLSH),     X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_FUN_ENT,      KC_RAISE                                                                X_RH
+         X_LH                                                          LH1,             LH0,                 X_CH       RH0,             RH1                                                                     X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
@@ -420,7 +438,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       RALT_T(US_Y),    US_X,            US_C,            US_D,            US_V,                X_CB       US_K,            US_H,            US_COMM,         US_DOT,          RALT_T(US_SLSH),     X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          KC_LOWER,        LT_MEDIA_SPC,        X_CH       LT_FUN_ENT,      KC_RAISE                                                                X_RH
+         X_LH                                                          LH1,             LH0,                 X_CH       RH0,             RH1                                                                     X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
