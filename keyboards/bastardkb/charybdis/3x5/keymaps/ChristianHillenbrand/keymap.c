@@ -7,7 +7,7 @@
 const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, LT(L_FUN, KC_BSPC), KC_DEL);
 const key_override_t shift_spc = ko_make_basic(MOD_MASK_SHIFT, LT(L_NAV, KC_SPC), KC_TAB);
 
-#define EXTRA_KEY_OVERRIDES &shift_bspc, &shift_spc
+#define EXTRA_KEY_OVERRIDES &shift_bspc, &shift_spc,
 
 #include "base.h"
 

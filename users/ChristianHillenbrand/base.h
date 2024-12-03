@@ -271,7 +271,7 @@ const key_override_t* key_overrides[] = {
   &ralt_u,
   &ralt_e,
   &ralt_e_,
-  EXTRA_KEY_OVERRIDES,
+  EXTRA_KEY_OVERRIDES
   NULL
 };
 
