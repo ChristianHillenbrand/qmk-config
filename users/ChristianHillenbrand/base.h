@@ -34,12 +34,17 @@ bool is_right_key(keyrecord_t* record) {
   return !is_left_key(record);
 }
 
+bool is_bottom_key(keyrecord_t* record) {
+  return record->event.key.row == MATRIX_ROWS / 2 - 1 ||
+    record->event.key.row == MATRIX_ROWS - 1;
+}
+
 bool is_left_lt(uint16_t keycode, keyrecord_t* record) {
-  return IS_QK_LAYER_TAP(keycode) && is_left_key(record);
+  return is_left_key(record) && is_bottom_key(record) && IS_QK_LAYER_TAP(keycode);
 }
 
 bool is_right_lt(uint16_t keycode, keyrecord_t* record) {
-  return IS_QK_LAYER_TAP(keycode) && is_right_key(record);
+  return is_right_key(record) && is_bottom_key(record) && IS_QK_LAYER_TAP(keycode);
 }
 
 bool is_hrm(uint16_t keycode) {
@@ -417,7 +422,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //                                                                                                     ╭──────╮
                                                                                                              X_NR
     // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
-         X_LT       LT_MEDIA_Q,       US_W,            US_E,            US_R,            US_T,                X_CT       US_Z,            US_U,            US_I,            US_O,            US_P,                X_RT
+         X_LT       LT_MEDIA_Q,      US_W,            US_E,            US_R,            US_T,                X_CT       US_Z,            US_U,            US_I,            US_O,            US_P,                X_RT
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LM       LGUI_T(US_A),    LALT_T(US_S),    LCTL_T(US_D),    LSFT_T(US_F),    US_G,                X_CM       US_H,            RSFT_T(US_J),    RCTL_T(US_K),    LALT_T(US_L),    RGUI_T(US_SCLN),     X_RM
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
@@ -487,7 +492,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       _______,         _______,         _______,         _______,         _______,             X_CB       RGB_RMOD,        RGB_HUD,         RGB_SAD,         RGB_VAD,         RGB_SPD,             X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          _______,         _______,             X_CH       KC_MPLY,         RGB_TOG                                                                 X_RH
+         X_LH                                                          _______,         _______,             X_CH       RGB_TOG,         KC_MPLY                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
