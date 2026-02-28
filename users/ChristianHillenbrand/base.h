@@ -5,8 +5,6 @@
 
 #include <keymap_us_extended.h>
 
-#include "features/achordion.h"
-
 #include "extra_keys.h"
 #include "funcs.h"
 #include "layers.h"
@@ -157,10 +155,6 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-  if (!process_achordion(keycode, record)) {
-    return false;
-  }
-
   if (!process_record_user_special(keycode, record)) {
     return false;
   }
@@ -224,31 +218,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
   return true;
 }
 
-void matrix_scan_user(void) {
-  achordion_task();
-}
-
-bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record, uint16_t other_keycode, keyrecord_t* other_record) {
-  if (is_hrm(tap_hold_keycode)) {
-    return achordion_opposite_hands(tap_hold_record, other_record);
-  }
-  return true;
-}
-
-uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
-  if (IS_QK_LAYER_TAP(tap_hold_keycode)) {
-    return 0;
-  }
-  return ACHORDION_TIMEOUT;
-}
-
-bool achordion_eager_mod(uint8_t mod) {
-  return (mod & (MOD_LALT | MOD_LGUI | MOD_RALT | MOD_RGUI)) == 0;
-}
-
 /*********************
  * TAP HOLD SETTINGS *
  *********************/
+
+bool get_chordal_hold(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record,
+                      uint16_t other_keycode, keyrecord_t* other_record) {
+  if (is_hrm(tap_hold_keycode)) {
+    return get_chordal_hold_default(tap_hold_record, other_record);
+  }
+  return true;
+}
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
   return (is_left_key(record) && !left_lt) ||
