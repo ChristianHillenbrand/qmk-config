@@ -4,6 +4,9 @@
 #define LH1 LT(L_NAV, KC_SPC)
 #define LH0 LT(L_FUN, KC_BSPC)
 
+const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, LT(L_FUN, KC_BSPC), KC_DEL);
+#define EXTRA_KEY_OVERRIDES &shift_bspc,
+
 #include "base.h"
 
 /*********
