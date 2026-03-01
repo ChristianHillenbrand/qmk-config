@@ -14,8 +14,6 @@
 bool left_lt = false;
 bool right_lt = false;
 
-uint16_t idle_timer;
-
 /*********************
  * GENERAL FUNCTIONS *
  *********************/
@@ -50,35 +48,35 @@ bool is_hrm(uint16_t keycode) {
     QK_MOD_TAP_GET_MODS(keycode) != MOD_RALT;
 }
 
-bool is_left_hrm(uint16_t keycode, keyrecord_t* record) {
-  return is_hrm(keycode) && is_left_key(record);
+/*********************
+ * TAP HOLD SETTINGS *
+ *********************/
+
+bool get_chordal_hold(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record,
+                      uint16_t other_keycode, keyrecord_t* other_record) {
+  if (is_hrm(tap_hold_keycode)) {
+    return get_chordal_hold_default(tap_hold_record, other_record);
+  }
+  return true;
 }
 
-bool is_right_hrm(uint16_t keycode, keyrecord_t* record) {
-  return is_hrm(keycode) && is_right_key(record);
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+  return (is_left_key(record) && !left_lt) ||
+    (is_right_key(record) && !right_lt);
 }
 
-bool is_space(uint16_t keycode) {
-  return (keycode & 0xFF) == KC_SPC;
-}
+/*********************
+ * FLOW TAP SETTINGS *
+ *********************/
 
-bool is_quick_tap_key(uint16_t keycode, keyrecord_t* record) {
-  return (is_left_hrm(keycode, record) && !left_lt) ||
-    (is_right_hrm(keycode, record) && !right_lt) ||
-     is_space(keycode);
-}
-
-bool is_typing_(uint16_t keycode)
-{
-  switch(keycode & 0xFF) {
+bool is_flow_tap_key(uint16_t keycode) {
+  switch (get_tap_keycode(keycode)) {
+    case KC_SPC:
     case US_A ... US_Z:
     case US_ADIA:
     case US_ODIA:
     case US_UDIA:
     case US_SS:
-    case KC_SPC:
-    case KC_LSFT:
-    case KC_RSFT:
       return true;
 
     default:
@@ -86,10 +84,18 @@ bool is_typing_(uint16_t keycode)
   }
 }
 
-bool is_typing(uint16_t keycode, keyrecord_t* record)
-{
-  return is_typing_(keycode) ||
-    (record->tap.count && is_typing_(keycode & 0xFF));
+uint16_t get_flow_tap_term(uint16_t keycode, keyrecord_t* record,
+                           uint16_t prev_keycode) {
+  if (QK_MOD_TAP <= keycode && keycode <= QK_MOD_TAP_MAX) {
+    if (QK_MOD_TAP_GET_MODS(keycode) == MOD_RALT) {
+      return 0;
+    }
+  }
+
+  if (is_flow_tap_key(keycode) && is_flow_tap_key(prev_keycode)) {
+    return FLOW_TAP_TERM;
+  }
+  return 0;
 }
 
 /**********************
@@ -130,27 +136,11 @@ bool caps_word_press_user(uint16_t keycode) {
 #define LT_MEDIA_Q LT(L_MEDIA, US_Q)
 
 bool pre_process_record_user(uint16_t keycode, keyrecord_t* record) {
-  static bool is_pressed[UINT8_MAX];
-  const uint8_t tap_keycode = keycode & 0xFF;
-
   if (is_left_lt(keycode, record)) {
     left_lt = record->event.pressed;
   } else if (is_right_lt(keycode, record)) {
     right_lt = record->event.pressed;
   }
-
-  if (record->event.pressed) {
-    if (is_quick_tap_key(keycode, record) &&
-      timer_elapsed(idle_timer) < QUICK_TAP_TERM) {
-      record->keycode = tap_keycode;
-      is_pressed[tap_keycode] = true;
-    }
-  }
-  else if (is_pressed[tap_keycode]) {
-    record->keycode = tap_keycode;
-    is_pressed[tap_keycode] = false;
-  }
-
   return true;
 }
 
@@ -211,28 +201,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       break;
   }
 
-  if (record->event.pressed && is_typing(keycode, record)) {
-    idle_timer = timer_read();
-  }
-
   return true;
-}
-
-/*********************
- * TAP HOLD SETTINGS *
- *********************/
-
-bool get_chordal_hold(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record,
-                      uint16_t other_keycode, keyrecord_t* other_record) {
-  if (is_hrm(tap_hold_keycode)) {
-    return get_chordal_hold_default(tap_hold_record, other_record);
-  }
-  return true;
-}
-
-bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  return (is_left_key(record) && !left_lt) ||
-    (is_right_key(record) && !right_lt);
 }
 
 /*****************
