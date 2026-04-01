@@ -9,8 +9,8 @@
  **********/
 
 void keyboard_pre_init_user(void) {
-  setPinOutput(24);
-  writePinHigh(24);
+  gpio_set_pin_output(24);
+  gpio_write_pin_high(24);
 }
 
 void rpc_caps_word_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
@@ -35,9 +35,9 @@ void keyboard_post_init_user(void) {
 void caps_word_set_user(bool active) {
   if (is_keyboard_left()) {
     if (active) {
-      writePinLow(24);
+      gpio_write_pin_low(24);
     } else {
-      writePinHigh(24);
+      gpio_write_pin_high(24);
     }
   }
 
@@ -53,10 +53,10 @@ bool led_update_user(led_t led_state) {
 
   static bool caps_lock_state = false;
   if (led_state.caps_lock && !caps_lock_state) {
-    writePinLow(24);
+    gpio_write_pin_low(24);
     caps_lock_state = true;
   } else {
-    writePinHigh(24);
+    gpio_write_pin_high(24);
     caps_lock_state = false;
   }
 
