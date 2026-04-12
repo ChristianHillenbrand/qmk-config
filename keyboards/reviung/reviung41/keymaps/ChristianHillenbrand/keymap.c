@@ -9,21 +9,13 @@ void keyboard_pre_init_user(void) {
   gpio_write_pin_high(17);
 }
 
-void caps_word_set_user(bool active) {
-  if (active) {
-    gpio_write_pin_low(17);
-  } else {
-    gpio_write_pin_high(17);
-  }
-}
-
 /**********
  * KEYMAP *
  **********/
 
 #define X_LT KC_ESC,
 #define X_LM CW_TOGG,
-#define X_LB KC_TAB,
+#define X_LB KC_LSFT,
 
 #define LH1 MO(L_FUN)
 #define LH0 LLS(L_NAV)
@@ -33,6 +25,6 @@ void caps_word_set_user(bool active) {
 
 #define X_RT KC_BSPC,
 #define X_RM KC_ENT,
-#define X_RB KC_DEL,
+#define X_RB KC_RSFT,
 
 #include "base.h"
