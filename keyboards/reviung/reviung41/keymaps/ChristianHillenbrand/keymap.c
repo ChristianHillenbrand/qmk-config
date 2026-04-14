@@ -14,17 +14,17 @@ void keyboard_pre_init_user(void) {
  **********/
 
 #define X_LT KC_ESC,
-#define X_LM CW_TOGG,
-#define X_LB KC_LSFT,
+#define X_LM KC_TAB,
+#define X_LB CW_TOGG,
 
-#define LH1 MO(L_FUN)
+#define LH1 KC_LGUI
 #define LH0 LLS(L_NAV)
-#define X_CH LT(L_FUN_SYM, KC_SPC),
+#define X_CH LT(L_FUN, KC_SPC),
 #define RH0 LRS(L_NUM)
-#define RH1 MO(L_SYM)
+#define RH1 KC_RGUI
 
 #define X_RT KC_BSPC,
-#define X_RM KC_ENT,
-#define X_RB KC_RSFT,
+#define X_RM LT(L_SYM, KC_ENT),
+#define X_RB KC_DEL,
 
 #include "base.h"
