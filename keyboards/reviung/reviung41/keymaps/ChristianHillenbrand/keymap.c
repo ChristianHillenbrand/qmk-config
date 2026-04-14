@@ -6,7 +6,7 @@
 
 void keyboard_pre_init_user(void) {
   gpio_set_pin_output(17);
-  gpio_write_pin_high(17);
+  gpio_write_pin_low(17);
 }
 
 /**********
@@ -19,7 +19,7 @@ void keyboard_pre_init_user(void) {
 
 #define LH1 MO(L_FUN)
 #define LH0 LLS(L_NAV)
-#define X_CH KC_SPC,
+#define X_CH LT(L_FUN_SYM, KC_SPC),
 #define RH0 LRS(L_NUM)
 #define RH1 MO(L_SYM)
 
