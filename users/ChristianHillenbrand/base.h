@@ -22,19 +22,6 @@ bool shift_pressed(void) {
   return (get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT;
 }
 
-bool is_left_key(keyrecord_t* record) {
-  return record->event.key.row < MATRIX_ROWS / 2;
-}
-
-bool is_right_key(keyrecord_t* record) {
-  return !is_left_key(record);
-}
-
-bool is_bottom_key(keyrecord_t* record) {
-  return record->event.key.row == MATRIX_ROWS / 2 - 1 ||
-    record->event.key.row == MATRIX_ROWS - 1;
-}
-
 bool is_left_lt(uint16_t keycode, keyrecord_t* record) {
   return is_left_key(record) && is_bottom_key(record) && IS_QK_LAYER_TAP(keycode);
 }
@@ -479,7 +466,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
          X_LB       US_BSLS,         US_1,            US_2,            US_3,            US_QUOT,             X_CB       _______,         _______,         _______,         _______,         TG(L_MOUSE),         X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
-         X_LH                                                          US_0,            _______,              X_CH       _______,         _______                                                                 X_RH
+         X_LH                                                          US_0,            _______,             X_CH       _______,         _______                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   ),
