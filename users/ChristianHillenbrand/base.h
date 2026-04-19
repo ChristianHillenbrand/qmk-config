@@ -47,11 +47,6 @@ bool get_chordal_hold(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record,
   return true;
 }
 
-bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-  return (is_left_key(record) && !left_lt) ||
-    (is_right_key(record) && !right_lt);
-}
-
 /*********************
  * FLOW TAP SETTINGS *
  *********************/

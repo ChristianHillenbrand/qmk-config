@@ -1,7 +1,7 @@
 #pragma once
 
 #define CHORDAL_HOLD
-#define PERMISSIVE_HOLD_PER_KEY
+#define PERMISSIVE_HOLD
 #define SPECULATIVE_HOLD
 
 #define FLOW_TAP_TERM 170
