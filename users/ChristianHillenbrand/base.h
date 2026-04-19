@@ -52,6 +52,10 @@ bool get_chordal_hold(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record,
  *********************/
 
 bool is_flow_tap_key(uint16_t keycode) {
+  if ((get_mods() & (MOD_MASK_CG | MOD_BIT_LALT)) != 0) {
+    return false; // Disable Flow Tap on hotkeys.
+  }
+
   switch (get_tap_keycode(keycode)) {
     case KC_SPC:
     case US_A ... US_Z:
@@ -59,6 +63,9 @@ bool is_flow_tap_key(uint16_t keycode) {
     case US_ODIA:
     case US_UDIA:
     case US_SS:
+    case US_DOT:
+    case US_SCLN:
+    case US_SLSH:
       return true;
 
     default:
