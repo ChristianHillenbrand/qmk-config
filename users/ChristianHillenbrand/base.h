@@ -197,6 +197,34 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
       }
       break;
 
+    case LSFT_T(US_CIRC):
+      if (record->tap.count && record->event.pressed) {
+        tap_code16(US_CIRC);
+        return false;
+      }
+      break;
+
+    case LCTL_T(US_PERC):
+      if (record->tap.count && record->event.pressed) {
+        tap_code16(US_PERC);
+        return false;
+      }
+      break;
+
+    case LALT_T(US_DLR):
+      if (record->tap.count && record->event.pressed) {
+        tap_code16(US_DLR);
+        return false;
+      }
+      break;
+
+    case LGUI_T(US_LCBR):
+      if (record->tap.count && record->event.pressed) {
+        tap_code16(US_LCBR);
+        return false;
+      }
+      break;
+
     default:
       break;
   }
@@ -500,6 +528,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
          X_LB       C(US_Y),         C(US_X),         C(US_C),         C(US_V),         C(US_Z),             X_CB       C(US_Z),         C(US_V),         C(US_C),         C(US_X),         C(US_Y),             X_RB
     // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
          X_LH                                                          MS_BTN2,         MS_BTN1,             X_CH       MS_BTN1,         MS_BTN2                                                                 X_RH
+    // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
+
+  ),
+
+  [L_FUN_SYM] = LAYOUT_wrapper(
+
+    //                                                                                                     ╭──────╮
+                                                                                                             X_NR
+    // ╭──────╮   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ├──────┤   ╭────────────────┬────────────────┬────────────────┬────────────────┬────────────────╮   ╭──────╮
+         X_LT       US_UNDS,         US_AMPR,         US_ASTR,         US_LPRN,         US_PLUS,             X_CT       US_TILD,         KC_F7,           KC_F8,           KC_F9,           KC_F12,              X_RT
+    // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
+         X_LM       LGUI_T(US_LCBR), LALT_T(US_DLR),  LCTL_T(US_PERC), LSFT_T(US_CIRC), US_RCBR,             X_CM       US_GRV,          RSFT_T(KC_F4),   RCTL_T(KC_F5),   LALT_T(KC_F6),   LGUI_T(KC_F11),      X_RM
+    // ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┼────────────────┼────────────────┤   ├──────┤
+         X_LB       US_PIPE,         US_EXLM,         US_AT,           US_HASH,         US_DQUO,             X_CB       CW_TOGG,         KC_F1,           KC_F2,           KC_F3,           KC_F10,              X_RB
+    // ├──────┤   ╰────────────────┴────────────────┴────────────────┼────────────────┼────────────────┤   ├──────┤   ├────────────────┼────────────────┼────────────────┴────────────────┴────────────────╯   ├──────┤
+         X_LH                                                          US_RPRN,         _______,             X_CH       _______,         _______                                                                 X_RH
     // ╰──────╯                                                      ╰────────────────┴────────────────╯   ╰──────╯   ╰────────────────┴────────────────╯                                                      ╰──────╯
 
   )

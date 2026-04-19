@@ -8,3 +8,4 @@
 #define L_SYM     5
 #define L_MEDIA   6
 #define L_MOUSE   7
+#define L_FUN_SYM 8
