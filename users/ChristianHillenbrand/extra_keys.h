@@ -56,6 +56,16 @@
   #define X_RH
 #endif
 
+// special keys
+#ifndef DRGSCRL
+  #define DRGSCRL KC_TRNS
+#endif
+
+#ifndef SNIPING
+  #define SNIPING KC_TRNS
+#endif
+
+// rgb keys
 #ifdef RGB_MATRIX_ENABLE
 #define RGB_TOGG RM_TOGG
 #define RGB_NEXT RM_NEXT

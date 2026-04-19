@@ -18,8 +18,15 @@ void keyboard_pre_init_user(void) {
 #define X_LB CW_TOGG,
 
 #define LH1 KC_LGUI
+#define LH1_NUM _______
+#define LH1_SYM _______
+
 #define LH0 LLS(L_NAV)
+#define LH0_NUM US_0
+#define LH0_SYM US_RPRN
+
 #define X_CH LT(L_FUN, KC_SPC),
+
 #define RH0 LRS(L_NUM)
 #define RH1 KC_RGUI
 
