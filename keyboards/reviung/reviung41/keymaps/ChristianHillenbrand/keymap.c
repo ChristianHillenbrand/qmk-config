@@ -32,7 +32,7 @@ void keyboard_pre_init_user(void) {
 bool is_left_key(keyrecord_t* record)
 {
   return record->event.key.row < (MATRIX_ROWS - 1) / 2 ||
-    (is_bottom_key(record) && record->event.key.col < (MATRIX_COLS - 1) / 2);
+    (is_bottom_key(record) && record->event.key.col < MATRIX_COLS / 2);
 }
 
 bool is_bottom_key(keyrecord_t* record)
