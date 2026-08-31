@@ -72,10 +72,6 @@ void render_layer(void) {
       oled_write_P(PSTR(" SYM "), false);
       break;
 
-    case L_MOUSE:
-      oled_write_P(PSTR("MOUSE"), false);
-      break;
-
     default:
       oled_write_P(PSTR("?????"), false);
       break;
