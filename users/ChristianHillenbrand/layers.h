@@ -7,4 +7,3 @@
 #define L_NUM     4
 #define L_SYM     5
 #define L_MEDIA   6
-#define L_MOUSE   7
