@@ -63,6 +63,13 @@ bool led_update_user(led_t led_state) {
   return true;
 }
 
+/*****************
+ * KEY OVERRIDES *
+ *****************/
+
+const key_override_t shift_bspc = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
+#define EXTRA_KEY_OVERRIDES &shift_bspc,
+
 /**********
  * KEYMAP *
  **********/
@@ -76,9 +83,9 @@ bool led_update_user(led_t led_state) {
 
 #define X_CB XXXXXXX, KC_MUTE,
 
-#define X_RT KC_DEL,
+#define X_RT US_BSLS,
 #define X_RM KC_QUOT,
-#define X_RB KC_RSFT,
+#define X_RB KC_DEL,
 #define X_RH ,KC_RCTL, KC_LALT, KC_RGUI
 
 #include "base.h"
