@@ -265,12 +265,43 @@ combo_t key_combos[] = {
 
 uint8_t combo_ref_from_layer(uint8_t layer){
   switch (layer){
-    case L_COLMK: return L_QWRTY;
-    default: return layer;
+    case L_COLMK:
+    case L_NAV:
+    case L_FUN:
+    case L_NUM:
+    case L_SYM:
+      return L_QWRTY;
+
+    default:
+      return layer;
   }
 }
 
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
+  uint8_t layer = get_highest_layer(layer_state);
+
+  if (layer == L_NAV || layer == L_FUN) {
+    switch (combo_index) {
+      case COMBO_BSPC:
+      case COMBO_DEL:
+        return true;
+
+    default:
+      return false;
+    }
+  }
+
+  if (layer == L_NUM || layer == L_SYM) {
+    switch (combo_index) {
+      case COMBO_ESC:
+      case COMBO_TAB:
+        return true;
+
+    default:
+      return false;
+    }
+  }
+
   switch (combo_index) {
     case COMBO_LBRC:
     case COMBO_LPRN:
